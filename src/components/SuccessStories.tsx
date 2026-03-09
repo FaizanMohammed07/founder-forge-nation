@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 
 const stories = [
@@ -26,41 +25,32 @@ const stories = [
 ];
 
 const SuccessStories = () => (
-  <section id="stories" className="py-24 md:py-32">
+  <section id="stories" className="py-20 md:py-28">
     <div className="container mx-auto px-4 md:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center mb-16"
-      >
-        <span className="text-sm font-medium text-primary tracking-widest uppercase">Success Stories</span>
-        <h2 className="text-3xl md:text-5xl font-display font-bold mt-4 glow-text">
+      <div className="text-center mb-14">
+        <p className="text-sm font-medium text-primary tracking-wide uppercase mb-3">Success Stories</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           From Students to Founders
         </h2>
-      </motion.div>
+      </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {stories.map((s, i) => (
-          <motion.div
+      <div className="grid md:grid-cols-3 gap-4">
+        {stories.map((s) => (
+          <div
             key={s.name}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="glass-card-hover p-8 flex flex-col"
+            className="section-card-hover p-6 flex flex-col"
           >
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">{s.tag}</span>
-              <ExternalLink className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-primary bg-primary/8 px-2.5 py-1 rounded-md">{s.tag}</span>
+              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
-            <h3 className="font-display text-2xl font-bold text-foreground mb-1">{s.name}</h3>
-            <p className="text-sm text-primary mb-3">by {s.founder}</p>
+            <h3 className="text-xl font-bold text-foreground mb-0.5">{s.name}</h3>
+            <p className="text-sm text-primary mb-2">by {s.founder}</p>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.desc}</p>
-            <div className="mt-6 pt-4 border-t border-border/50">
-              <span className="font-display text-lg font-bold glow-blue">{s.metric}</span>
+            <div className="mt-5 pt-4 border-t border-border">
+              <span className="text-lg font-bold text-primary">{s.metric}</span>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

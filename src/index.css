@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,54 +6,47 @@
 
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    --background: 210 20% 98%;
+    --foreground: 220 20% 10%;
 
-    --card: 222 40% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
 
-    --popover: 222 40% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 221 83% 30%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 16%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 226 71% 40%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 222 30% 14%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 221 83% 30%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 18%;
-    --input: 222 30% 18%;
-    --ring: 217 91% 60%;
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 221 83% 30%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --electric: 217 91% 60%;
-    --electric-glow: 217 100% 70%;
-    --navy-deep: 222 47% 4%;
-    --navy: 222 47% 6%;
-    --navy-light: 222 40% 12%;
-    --glass: 222 40% 10%;
-    --glass-border: 222 30% 20%;
     --success: 142 71% 45%;
     --amber: 38 92% 50%;
 
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 222 30% 16%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 10%;
+    --sidebar-primary: 221 83% 30%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 214 20% 90%;
+    --sidebar-ring: 221 83% 30%;
   }
 }
 
@@ -68,90 +61,52 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl;
-    box-shadow: 0 8px 32px -8px hsl(var(--electric) / 0.08),
-                0 0 0 1px hsl(var(--glass-border) / 0.5);
+  .section-card {
+    @apply bg-card border border-border rounded-lg;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
   }
 
-  .glass-card-hover {
-    @apply glass-card transition-all duration-500;
+  .section-card-hover {
+    @apply section-card transition-all duration-200;
   }
 
-  .glass-card-hover:hover {
-    @apply border-primary/30;
-    box-shadow: 0 16px 48px -12px hsl(var(--electric) / 0.15),
-                0 0 0 1px hsl(var(--electric) / 0.2);
-    transform: translateY(-4px);
+  .section-card-hover:hover {
+    @apply border-primary/20;
+    box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.08);
+    transform: translateY(-1px);
   }
 
-  .glow-text {
-    background: linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--electric)));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .heading-gradient {
+    color: hsl(var(--foreground));
   }
 
-  .glow-blue {
-    background: linear-gradient(135deg, hsl(var(--electric)), hsl(var(--electric-glow)));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .accent-text {
+    color: hsl(var(--primary));
   }
 
-  .gradient-border {
-    position: relative;
+  .btn-primary {
+    @apply bg-primary text-primary-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200;
+    box-shadow: 0 1px 3px 0 hsl(var(--primary) / 0.3);
   }
 
-  .gradient-border::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, hsl(var(--electric) / 0.5), transparent, hsl(var(--electric) / 0.3));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
+  .btn-primary:hover {
+    box-shadow: 0 4px 12px -2px hsl(var(--primary) / 0.4);
+    transform: translateY(-1px);
   }
 
-  .hero-gradient {
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(var(--electric) / 0.15) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 40% at 80% 20%, hsl(var(--electric) / 0.08) 0%, transparent 50%);
+  .btn-outline {
+    @apply border border-border text-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200 bg-card;
   }
 
-  .section-gradient {
-    background: radial-gradient(ellipse 80% 50% at 50% 100%, hsl(var(--electric) / 0.05) 0%, transparent 60%);
-  }
-
-  .btn-primary-glow {
-    @apply bg-primary text-primary-foreground font-semibold px-8 py-4 rounded-xl transition-all duration-300;
-    box-shadow: 0 0 20px hsl(var(--electric) / 0.3);
-  }
-
-  .btn-primary-glow:hover {
-    box-shadow: 0 0 40px hsl(var(--electric) / 0.5);
-    transform: translateY(-2px);
-  }
-
-  .btn-outline-glow {
-    @apply border border-primary/40 text-primary font-semibold px-8 py-4 rounded-xl transition-all duration-300 bg-transparent;
-  }
-
-  .btn-outline-glow:hover {
-    @apply bg-primary/10 border-primary/60;
-    transform: translateY(-2px);
-  }
-
-  .dot-grid {
-    background-image: radial-gradient(hsl(var(--electric) / 0.08) 1px, transparent 1px);
-    background-size: 24px 24px;
+  .btn-outline:hover {
+    @apply border-primary/40 bg-muted;
+    transform: translateY(-1px);
   }
 }
 

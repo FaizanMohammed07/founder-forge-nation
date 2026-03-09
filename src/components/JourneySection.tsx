@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Search, FileSearch, CheckCircle, Code, TestTube, BarChart3, Rocket, TrendingUp } from "lucide-react";
 
 const stages = [
@@ -13,64 +12,34 @@ const stages = [
 ];
 
 const JourneySection = () => (
-  <section id="journey" className="py-24 md:py-32 section-gradient relative">
+  <section id="journey" className="py-20 md:py-28 bg-muted/50">
     <div className="container mx-auto px-4 md:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center mb-16"
-      >
-        <span className="text-sm font-medium text-primary tracking-widest uppercase">Your Journey</span>
-        <h2 className="text-3xl md:text-5xl font-display font-bold mt-4 glow-text">
+      <div className="text-center mb-14">
+        <p className="text-sm font-medium text-primary tracking-wide uppercase mb-3">Your Journey</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           Program Roadmap
         </h2>
-        <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+        <p className="text-muted-foreground mt-3 max-w-xl mx-auto text-sm">
           8 structured stages to take you from idea to investor-ready startup
         </p>
-      </motion.div>
+      </div>
 
-      <div className="relative">
-        {/* Timeline line */}
-        <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
-
-        <div className="flex flex-col gap-8 lg:gap-0">
-          {stages.map((stage, i) => {
-            const isLeft = i % 2 === 0;
-            return (
-              <motion.div
-                key={stage.title}
-                initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={`lg:flex items-center gap-8 ${isLeft ? "lg:flex-row" : "lg:flex-row-reverse"}`}
-              >
-                <div className={`flex-1 ${isLeft ? "lg:text-right" : "lg:text-left"}`}>
-                  <div className={`glass-card-hover p-6 inline-block max-w-md ${isLeft ? "lg:ml-auto" : ""}`}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <stage.icon className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <span className="text-xs text-primary font-medium">Stage {i + 1}</span>
-                        <h3 className="font-display font-semibold text-foreground">{stage.title}</h3>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{stage.desc}</p>
-                  </div>
-                </div>
-
-                {/* Center dot */}
-                <div className="hidden lg:flex items-center justify-center w-8">
-                  <div className="w-4 h-4 rounded-full bg-primary border-4 border-background shadow-[0_0_12px_hsl(var(--electric)/0.5)]" />
-                </div>
-
-                <div className="flex-1" />
-              </motion.div>
-            );
-          })}
-        </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stages.map((stage, i) => (
+          <div
+            key={stage.title}
+            className="section-card-hover p-5"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-md bg-primary/8 flex items-center justify-center flex-shrink-0">
+                <stage.icon className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-xs font-medium text-primary">Stage {i + 1}</span>
+            </div>
+            <h3 className="font-semibold text-foreground text-sm mb-1">{stage.title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{stage.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
