@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Users, Wrench, Code, Calendar, Presentation, Handshake } from "lucide-react";
 
 const benefits = [
@@ -11,36 +10,27 @@ const benefits = [
 ];
 
 const CommunitySection = () => (
-  <section id="community" className="py-24 md:py-32 section-gradient">
+  <section id="community" className="py-20 md:py-28 bg-muted/50">
     <div className="container mx-auto px-4 md:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center mb-16"
-      >
-        <span className="text-sm font-medium text-primary tracking-widest uppercase">Community</span>
-        <h2 className="text-3xl md:text-5xl font-display font-bold mt-4 glow-text">
+      <div className="text-center mb-14">
+        <p className="text-sm font-medium text-primary tracking-wide uppercase mb-3">Community</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
           Join the Ecosystem
         </h2>
-      </motion.div>
+      </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {benefits.map((b, i) => (
-          <motion.div
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {benefits.map((b) => (
+          <div
             key={b.title}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08 }}
-            className="glass-card-hover p-6 group"
+            className="section-card-hover p-5 group"
           >
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-              <b.icon className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-lg bg-primary/8 flex items-center justify-center mb-3 group-hover:bg-primary/12 transition-colors">
+              <b.icon className="w-4 h-4 text-primary" />
             </div>
-            <h3 className="font-display font-semibold text-foreground mb-2">{b.title}</h3>
+            <h3 className="font-semibold text-foreground text-sm mb-1.5">{b.title}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>
