@@ -72,25 +72,20 @@ const EcosystemSection = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
 
   return (
-    <section className="py-24 md:py-40 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
-      {/* Ambient background effects */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-300 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-300 rounded-full blur-[120px] animate-pulse delay-1000" />
-      </div>
+    <section className="py-24 md:py-40 bg-white relative overflow-hidden">
 
       <div className="container mx-auto px-4 md:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-20 md:mb-32">
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#E50914]/10 to-purple-500/10 border border-[#E50914]/20 mb-6">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-gray-200 mb-6">
             <Sparkles className="w-4 h-4 text-[#E50914]" />
-            <span className="text-[11px] font-black tracking-[0.2em] uppercase bg-gradient-to-r from-[#E50914] to-purple-600 bg-clip-text text-transparent">
+            <span className="text-[11px] font-black tracking-[0.2em] uppercase text-[#E50914]">
               The Evolution Path
             </span>
           </div>
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-[#111111] tracking-tight mb-6">
             Your Startup{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E50914] via-purple-600 to-blue-600">
+            <span className="text-[#E50914]">
               Journey
             </span>
           </h2>
@@ -103,16 +98,16 @@ const EcosystemSection = () => {
         {/* Desktop Journey Timeline */}
         <div className="hidden lg:block relative max-w-[1400px] mx-auto mb-24">
           {/* Connection Line */}
-          <div className="absolute top-[100px] left-[8%] right-[8%] h-1 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-full" />
+          <div className="absolute top-[100px] left-[8%] right-[8%] h-1 bg-gray-200 rounded-full" />
           
           {/* Active Progress Line */}
           <div 
-            className="absolute top-[100px] left-[8%] h-1 bg-gradient-to-r from-[#E50914] via-purple-500 to-blue-500 rounded-full transition-all duration-700 ease-out shadow-[0_0_20px_rgba(229,9,20,0.6)]"
+            className="absolute top-[100px] left-[8%] h-1 bg-[#E50914] rounded-full transition-all duration-700 ease-out"
             style={{ 
               width: selectedIndex !== null ? `${(selectedIndex / (steps.length - 1)) * 84}%` : '0%',
             }}
           >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-4 border-[#E50914] shadow-[0_0_20px_rgba(229,9,20,0.8)] animate-pulse" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-4 border-[#E50914]" />
           </div>
 
           {/* Stage Cards */}
@@ -134,7 +129,7 @@ const EcosystemSection = () => {
                   <div
                     className={`relative z-10 w-[200px] h-[200px] rounded-2xl mb-6 flex flex-col items-center justify-center transition-all duration-500 border-2 ${
                       isActive
-                        ? `border-[#E50914] bg-gradient-to-br ${step.color} shadow-[0_20px_60px_rgba(0,0,0,0.3)]`
+                        ? "border-[#E50914] bg-red-50 shadow-lg"
                         : "border-gray-200 bg-white/80 backdrop-blur-sm shadow-lg"
                     } ${
                       isHovered || isSelected
@@ -143,39 +138,35 @@ const EcosystemSection = () => {
                     }`}
                   >
                     {/* Glow Effect */}
-                    {isActive && (
-                      <div className={`absolute inset-0 ${step.bgGlow} blur-2xl rounded-2xl -z-10 animate-pulse`} />
-                    )}
-
                     {/* Icon */}
-                    <div className={`mb-4 transition-all duration-500 ${isActive ? "text-white" : "text-gray-700"}`}>
+                    <div className={`mb-4 transition-all duration-500 ${isActive ? "text-[#E50914]" : "text-gray-700"}`}>
                       <step.icon className="w-12 h-12" strokeWidth={1.5} />
                     </div>
 
                     {/* Stage Number */}
-                    <div className={`text-[10px] font-black tracking-[0.2em] uppercase mb-2 ${isActive ? "text-white/80" : "text-gray-400"}`}>
+                    <div className={`text-[10px] font-black tracking-[0.2em] uppercase mb-2 ${isActive ? "text-[#E50914]/80" : "text-gray-400"}`}>
                       Stage {String(i + 1).padStart(2, "0")}
                     </div>
 
                     {/* Label */}
-                    <h3 className={`font-black text-lg text-center mb-1 ${isActive ? "text-white" : "text-gray-900"}`}>
+                    <h3 className={`font-black text-lg text-center mb-1 ${isActive ? "text-[#111111]" : "text-gray-900"}`}>
                       {step.label}
                     </h3>
 
                     {/* Tagline */}
-                    <p className={`text-xs font-medium text-center ${isActive ? "text-white/90" : "text-gray-500"}`}>
+                    <p className={`text-xs font-medium text-center ${isActive ? "text-gray-600" : "text-gray-500"}`}>
                       {step.tagline}
                     </p>
 
                     {/* Metrics Badge */}
-                    <div className={`mt-4 px-3 py-1 rounded-full text-[10px] font-bold ${isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}>
+                    <div className={`mt-4 px-3 py-1 rounded-full text-[10px] font-bold ${isActive ? "bg-white text-[#E50914] border border-red-100" : "bg-gray-100 text-gray-600"}`}>
                       {step.metrics}
                     </div>
 
                     {/* Expand Indicator */}
                     {(isHovered || isSelected) && (
                       <div className="absolute bottom-3 right-3">
-                        <ChevronRight className={`w-5 h-5 ${isActive ? "text-white" : "text-[#E50914]"} animate-bounce`} />
+                        <ChevronRight className="w-5 h-5 text-[#E50914] animate-bounce" />
                       </div>
                     )}
                   </div>
@@ -199,40 +190,36 @@ const EcosystemSection = () => {
                 <div
                   className={`relative rounded-2xl p-6 transition-all duration-500 cursor-pointer border-2 ${
                     isSelected
-                      ? `border-[#E50914] bg-gradient-to-br ${step.color} shadow-[0_20px_60px_rgba(0,0,0,0.3)]`
+                      ? "border-[#E50914] bg-red-50 shadow-lg"
                       : "border-gray-200 bg-white shadow-lg"
                   }`}
                 >
-                  {isSelected && (
-                    <div className={`absolute inset-0 ${step.bgGlow} blur-2xl rounded-2xl -z-10 animate-pulse`} />
-                  )}
-
                   <div className="flex items-start gap-4">
-                    <div className={`shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${isSelected ? "bg-white/20" : "bg-gray-100"}`}>
-                      <step.icon className={`w-8 h-8 ${isSelected ? "text-white" : "text-gray-700"}`} strokeWidth={1.5} />
+                    <div className={`shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${isSelected ? "bg-white" : "bg-gray-100"}`}>
+                      <step.icon className={`w-8 h-8 ${isSelected ? "text-[#E50914]" : "text-gray-700"}`} strokeWidth={1.5} />
                     </div>
 
                     <div className="flex-1">
-                      <div className={`text-[10px] font-black tracking-[0.2em] uppercase mb-1 ${isSelected ? "text-white/80" : "text-gray-400"}`}>
+                      <div className={`text-[10px] font-black tracking-[0.2em] uppercase mb-1 ${isSelected ? "text-[#E50914]/80" : "text-gray-400"}`}>
                         Stage {String(i + 1).padStart(2, "0")}
                       </div>
-                      <h3 className={`font-black text-xl mb-1 ${isSelected ? "text-white" : "text-gray-900"}`}>
+                      <h3 className={`font-black text-xl mb-1 ${isSelected ? "text-[#111111]" : "text-gray-900"}`}>
                         {step.label}
                       </h3>
-                      <p className={`text-sm font-medium mb-2 ${isSelected ? "text-white/90" : "text-gray-500"}`}>
+                      <p className={`text-sm font-medium mb-2 ${isSelected ? "text-gray-600" : "text-gray-500"}`}>
                         {step.tagline}
                       </p>
-                      <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold ${isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}>
+                      <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold ${isSelected ? "bg-white text-[#E50914] border border-red-100" : "bg-gray-100 text-gray-600"}`}>
                         {step.metrics}
                       </div>
                     </div>
 
-                    <ChevronRight className={`w-5 h-5 shrink-0 transition-transform ${isSelected ? "rotate-90 text-white" : "text-gray-400"}`} />
+                    <ChevronRight className={`w-5 h-5 shrink-0 transition-transform ${isSelected ? "rotate-90 text-[#E50914]" : "text-gray-400"}`} />
                   </div>
 
                   {isSelected && (
-                    <div className="mt-6 pt-6 border-t border-white/20">
-                      <p className="text-white/90 leading-relaxed">
+                    <div className="mt-6 pt-6 border-t border-red-100">
+                      <p className="text-gray-700 leading-relaxed">
                         {step.description}
                       </p>
                     </div>
@@ -249,26 +236,25 @@ const EcosystemSection = () => {
           return (
             <div className="hidden lg:block">
               <div className="max-w-4xl mx-auto">
-                <div className={`relative rounded-3xl p-12 bg-gradient-to-br ${steps[selectedIndex].color} border-2 border-white/20 shadow-[0_30px_80px_rgba(0,0,0,0.3)]`}>
-                  <div className={`absolute inset-0 ${steps[selectedIndex].bgGlow} blur-3xl rounded-3xl -z-10 animate-pulse`} />
+                <div className="relative rounded-3xl p-12 bg-white border-2 border-red-100 shadow-xl">
                   
                   <div className="flex items-start gap-8">
-                    <div className="shrink-0 w-24 h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <SelectedIcon className="w-12 h-12 text-white" strokeWidth={1.5} />
+                    <div className="shrink-0 w-24 h-24 rounded-2xl bg-red-50 flex items-center justify-center">
+                      <SelectedIcon className="w-12 h-12 text-[#E50914]" strokeWidth={1.5} />
                     </div>
 
                     <div className="flex-1">
-                      <div className="text-[11px] font-black tracking-[0.2em] uppercase text-white/80 mb-2">
+                      <div className="text-[11px] font-black tracking-[0.2em] uppercase text-[#E50914]/80 mb-2">
                         Stage {String(selectedIndex + 1).padStart(2, "0")} • {steps[selectedIndex].metrics}
                       </div>
-                      <h3 className="text-4xl font-black text-white mb-3">
+                      <h3 className="text-4xl font-black text-[#111111] mb-3">
                         {steps[selectedIndex].label}
                       </h3>
-                      <p className="text-lg text-white/90 font-light leading-relaxed mb-6">
+                      <p className="text-lg text-gray-700 font-light leading-relaxed mb-6">
                         {steps[selectedIndex].description}
                       </p>
                       
-                      <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold hover:bg-white/30 transition-all cursor-pointer group">
+                      <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-red-50 border border-red-100 text-[#E50914] font-bold hover:bg-red-100 transition-all cursor-pointer group">
                         Learn More
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </div>

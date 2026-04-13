@@ -51,24 +51,12 @@ const Navbar = () => {
               className="bg-gray-50 border border-gray-200 text-[#111111] text-sm rounded-sm pl-9 pr-4 py-1.5 focus:outline-none focus:border-gray-300 focus:bg-white transition-all w-[180px]"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
             <Link
-              to="/events/founders-meet-2026/register"
-              className="text-[13px] font-semibold text-gray-600 hover:text-[#E50914] px-2 transition-colors"
-            >
-              Founders Meet Register
-            </Link>
-            <Link
-              to="/survey"
-              className="text-[13px] font-semibold text-gray-600 hover:text-[#E50914] px-2 transition-colors"
-            >
-              Take Survey
-            </Link>
-            <Link
-              to="/apply"
+              to="/events/founders-meet-2026"
               className="bg-[#E50914] hover:bg-[#c40812] text-white text-[13px] font-semibold px-5 py-2.5 rounded-sm transition-all"
             >
-              Apply Now
+              Founders Meet Register
             </Link>
           </div>
         </div>
@@ -105,22 +93,11 @@ const Navbar = () => {
             ))}
             <div className="flex flex-col gap-2 mt-3 pt-4 border-t border-gray-100">
               <Link
-                to="/events/founders-meet-2026/register"
-                className="text-sm font-semibold text-gray-600 text-center py-3 hover:bg-gray-50 rounded-sm transition-colors"
+                to="/events/founders-meet-2026"
+                className="bg-[#E50914] text-white text-sm font-semibold text-center py-3 rounded-sm shadow-sm"
+                onClick={() => setIsOpen(false)}
               >
                 Founders Meet Register
-              </Link>
-              <Link
-                to="/survey"
-                className="text-sm font-semibold text-gray-600 text-center py-3 hover:bg-gray-50 rounded-sm transition-colors"
-              >
-                Take Survey
-              </Link>
-              <Link
-                to="/apply"
-                className="bg-[#E50914] text-white text-sm font-semibold text-center py-3 rounded-sm shadow-sm"
-              >
-                Apply Now
               </Link>
             </div>
           </div>
