@@ -1,48 +1,17 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const stories = [
-  {
-    name: "EduFlow Disrupts AI Learning Landscape",
-    founder: "Riya & Aman",
-    desc: "The AI-powered learning platform just closed its seed round, raising ₹2Cr to expand operations across tier-2 cities.",
-    image:
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1000&auto=format&fit=crop",
-    metric: "₹2Cr Raised",
-    tag: "EdTech",
-    date: "12 hours ago",
-  },
-  {
-    name: "GreenCart's Sustainable Delivery Model Proven",
-    founder: "Sahil Verma",
-    desc: "A closer look at how this D2C grocery startup reached 10,000+ daily users using an eco-friendly supply chain.",
-    image:
-      "https://images.unsplash.com/photo-1556761175-5973b0f32e7e?q=80&w=1000&auto=format&fit=crop",
-    metric: "10K+ Users",
-    tag: "D2C",
-    date: "1 day ago",
-  },
-  {
-    name: "MedConnect Reaches Milestone Consultations",
-    founder: "Kavya Nair",
-    desc: "Telemedicine platform crosses 50,000+ remote consultations, effectively bridging the rural healthcare gap.",
-    image:
-      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1000&auto=format&fit=crop",
-    metric: "50K+ Consults",
-    tag: "HealthTech",
-    date: "2 days ago",
-  },
-];
+import StoryImage from "@/components/StoryImage";
+import { homepageStories } from "@/data/stories";
 
 const SuccessStories = () => (
   <section
     id="stories"
-    className="py-20 md:py-24 bg-white border-t border-[#E5E5E5]"
+    className="border-t border-[#E5E5E5] bg-white py-20 md:py-24"
   >
     <div className="container mx-auto px-4 md:px-8">
-      <div className="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
+      <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#111111] tracking-tight mb-2">
+          <h2 className="mb-2 text-3xl font-bold tracking-tight text-[#111111] md:text-4xl">
             Latest Stories
           </h2>
           <p className="text-base text-[#111111]/60">
@@ -51,53 +20,59 @@ const SuccessStories = () => (
         </div>
         <Link
           to="/stories"
-          className="text-sm font-semibold text-[#E50914] hover:text-[#c40812] flex items-center gap-1.5 transition-colors group"
+          className="group flex items-center gap-1.5 text-sm font-semibold text-[#E50914] transition-colors hover:text-[#c40812]"
         >
-          View all stories{" "}
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          View all stories
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
-        {stories.map((s) => (
-          <div
-            key={s.name}
-            className="flex flex-col border border-[#E5E5E5] rounded-sm group overflow-hidden bg-white hover:border-[#E50914]/30 transition-colors shadow-sm"
+      <div className="grid gap-8 md:grid-cols-3">
+        {homepageStories.map((story) => (
+          <article
+            key={story.slug}
+            className="group flex flex-col overflow-hidden rounded-sm border border-[#E5E5E5] bg-white shadow-sm transition-colors hover:border-[#E50914]/30"
           >
-            <div className="relative aspect-[16/10] overflow-hidden bg-[#F5F5F5]">
-              <img
-                src={s.image}
-                alt={s.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            <Link
+              to={`/stories/${story.slug}`}
+              className="relative aspect-[16/10] overflow-hidden bg-[#F5F5F5]"
+            >
+              <StoryImage
+                src={story.image}
+                alt={story.title}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute top-3 left-3">
-                <span className="text-[11px] font-bold text-white bg-[#E50914] px-2.5 py-1 uppercase tracking-wide rounded-sm shadow-sm">
-                  {s.tag}
+              <div className="absolute left-3 top-3">
+                <span className="rounded-sm bg-[#E50914] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm">
+                  {story.category}
                 </span>
               </div>
-            </div>
+            </Link>
 
-            <div className="p-6 flex flex-col flex-1">
-              <div className="flex items-center justify-between mb-3 text-[13px] text-[#111111]/50 font-medium">
-                <span>{s.date}</span>
-                <span className="text-[#E50914] font-semibold">{s.metric}</span>
+            <div className="flex flex-1 flex-col p-6">
+              <div className="mb-3 flex items-center justify-between text-[13px] font-medium text-[#111111]/50">
+                <span>{story.date}</span>
+                <span className="font-semibold text-[#E50914]">
+                  {story.metric}
+                </span>
               </div>
-              <h3 className="text-xl font-bold text-[#111111] mb-3 leading-snug group-hover:text-[#E50914] transition-colors">
-                {s.name}
+              <h3 className="mb-3 text-xl font-bold leading-snug text-[#111111] transition-colors group-hover:text-[#E50914]">
+                {story.title}
               </h3>
-              <p className="text-sm text-[#111111]/70 leading-relaxed flex-1 mb-6">
-                {s.desc}
+              <p className="mb-6 flex-1 text-sm leading-relaxed text-[#111111]/70">
+                {story.excerpt}
               </p>
               <div className="mt-auto border-t border-[#E5E5E5] pt-4">
                 <Link
-                  to="/stories"
-                  className="text-sm font-bold text-[#111111] hover:text-[#E50914] transition-colors inline-block"
+                  to={`/stories/${story.slug}`}
+                  className="inline-flex items-center gap-2 text-sm font-bold text-[#111111] transition-colors hover:text-[#E50914]"
                 >
                   Read More
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </div>
