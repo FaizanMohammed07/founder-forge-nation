@@ -53,6 +53,12 @@ const Navbar = () => {
           </div>
           <div className="flex items-center gap-3">
             <Link
+              to="/events/founders-meet-2026/register"
+              className="text-[13px] font-semibold text-gray-600 hover:text-[#E50914] px-2 transition-colors"
+            >
+              Founders Meet Register
+            </Link>
+            <Link
               to="/survey"
               className="text-[13px] font-semibold text-gray-600 hover:text-[#E50914] px-2 transition-colors"
             >
@@ -98,6 +104,12 @@ const Navbar = () => {
               </a>
             ))}
             <div className="flex flex-col gap-2 mt-3 pt-4 border-t border-gray-100">
+              <Link
+                to="/events/founders-meet-2026/register"
+                className="text-sm font-semibold text-gray-600 text-center py-3 hover:bg-gray-50 rounded-sm transition-colors"
+              >
+                Founders Meet Register
+              </Link>
               <Link
                 to="/survey"
                 className="text-sm font-semibold text-gray-600 text-center py-3 hover:bg-gray-50 rounded-sm transition-colors"

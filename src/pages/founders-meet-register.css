@@ -1,0 +1,94 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+
+.founders-meet-page {
+  --signal: #ccff00;
+  --void: #030303;
+  min-height: 100vh;
+  background-color: var(--void);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.founders-meet-page .font-display {
+  font-family: "Orbitron", sans-serif;
+}
+
+.founders-meet-page .font-mono {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.founders-meet-page .grid-floor {
+  position: absolute;
+  width: 300%;
+  height: 150%;
+  bottom: -60%;
+  left: -100%;
+  background-image:
+    linear-gradient(rgba(204, 255, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(204, 255, 0, 0.1) 1px, transparent 1px);
+  background-size: 80px 80px;
+  transform: perspective(1000px) rotateX(80deg);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 30%,
+    transparent 95%
+  );
+  z-index: 1;
+  will-change: transform;
+  animation: fm-grid-move 15s linear infinite;
+}
+
+@keyframes fm-grid-move {
+  from {
+    transform: perspective(1000px) rotateX(80deg) translateY(0);
+  }
+
+  to {
+    transform: perspective(1000px) rotateX(80deg) translateY(80px);
+  }
+}
+
+.founders-meet-page .clip-corner {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    0 100%
+  );
+}
+
+.founders-meet-page .btn-glitch {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.founders-meet-page .btn-glitch::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(204, 255, 0, 0.8),
+    transparent
+  );
+  transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  transform: skewX(-20deg);
+  z-index: 1;
+}
+
+.founders-meet-page .btn-glitch:hover::before {
+  left: 100%;
+}
+
+.founders-meet-page .glass-panel {
+  background: rgba(10, 10, 10, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}

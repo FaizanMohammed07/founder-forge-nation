@@ -1,0 +1,680 @@
+---
+// /events/[slug]/register.astro - Dynamic Registration Page
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { events } from '../../../data/events';
+import { Icon } from 'astro-icon/components';
+
+export async function getStaticPaths() {
+  return events
+    .filter(event => event.status === 'upcoming' && event.registrationLink) // Only generate for upcoming events with links
+    .map((event) => ({
+      params: { slug: event.slug },
+      props: { event },
+    }));
+}
+
+const { event } = Astro.props;
+const isFoundersMeet = event.slug === 'founders-meet-2026';
+
+// Temporarily pause registrations
+const isRegistrationOpen = event.status === 'upcoming';
+
+// Get registration deadline from timeline
+const registrationDeadline = event.timeline?.find(item => 
+  /(registration\s*close|registrations\s*close|registration\s*closes|registrations\s*closes)/.test(item.title.toLowerCase())
+);
+
+// Logic moved from previous DevthonRegistration.astro
+// Assuming a generic registration form component or structure here.
+// For now, I will create a robust, generic registration form that adapts to the event.
+
+---
+
+<MainLayout 
+  title={`Register for ${event.title} | DevUp Society`}
+  description={`Secure your spot for ${event.title}. Limited seats available.`}
+>
+  <!-- Google Analytics - DISABLED FOR NOW -->
+  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> -->
+  <!-- <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX'); // Replace with your GA4 ID
+  </script> -->
+  <div class="min-h-screen bg-[#030303] flex items-center justify-center p-6 pt-32 relative overflow-hidden">
+    <!-- Background FX -->
+    <div class="fixed inset-0 pointer-events-none">
+      <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(239,68,68,0.12),transparent_70%)]"></div>
+      <div class="grid-floor opacity-20"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-2xl">
+      <!-- Header -->
+      <div class="text-center mb-10">
+        <a href={`/events/${event.slug}`} data-scroll-top class="inline-flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-xs uppercase tracking-widest transition-colors mb-6">
+          <Icon name="lucide:arrow-left" />
+          <span>Back to Event details</span>
+        </a>
+        <h1 class="font-display text-4xl md:text-5xl text-white font-bold mb-4">
+          REGISTER NOW
+        </h1>
+        <p class="font-mono text-zinc-400 text-sm">
+          Event: <span class="text-red-300">{event.title}</span>
+        </p>
+        {event.fee && !isFoundersMeet && (
+            <div class="mt-4 inline-block px-4 py-1 bg-zinc-900 border border-zinc-800 rounded-full">
+                <span class="font-mono text-xs text-zinc-400">Founders Meet Fee: <span class="text-white font-bold">₹{event.fee}/person</span> <span class="text-zinc-500">(for shortlisted innovators)</span></span>
+            </div>
+        )}
+        {isFoundersMeet && (
+          <p class="mt-3 font-mono text-xs text-zinc-500 uppercase tracking-wider">
+            Registration is free for all. Selected participants proceed to payment after interviews.
+          </p>
+        )}
+        
+        {/* Registration Countdown Timer */}
+        {isRegistrationOpen && registrationDeadline && (
+          <div class="mt-6">
+            <div class="inline-block px-6 py-3 bg-red-500/10 border border-red-500/30 rounded-sm">
+              <div class="flex items-center gap-3">
+                <Icon name="lucide:timer" class="text-red-300" />
+                <div class="text-left">
+                  <div class="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Registration Closes In</div>
+                  <div id="countdown-timer" class="font-mono text-red-300 text-xl font-bold" data-deadline={registrationDeadline.date}>
+                    Loading...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <!-- Form Container -->
+      <div class="glass-panel p-8 md:p-12 clip-corner relative overflow-hidden">
+        
+        {/* Registration Closed Message */}
+        {!isRegistrationOpen && (
+          <div class="text-center py-16">
+            <div class="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-yellow-500/20">
+              <Icon name="lucide:clock" class="text-4xl text-yellow-500" />
+            </div>
+            <h2 class="font-display text-3xl text-white mb-4">REGISTRATIONS PAUSED</h2>
+            <p class="font-mono text-zinc-400 text-sm mb-8">
+              {isFoundersMeet
+                ? 'Registrations are currently unavailable. Please try again shortly.'
+                : 'Registrations will open soon.'}
+            </p>
+            <a href="/events" data-scroll-top class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-widest transition-colors">
+              Return to Events
+            </a>
+          </div>
+        )}
+        
+        {isRegistrationOpen && (
+        
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center">
+          <div class="w-16 h-16 border-2 border-zinc-800 border-t-red-400 rounded-full animate-spin mb-4"></div>
+          <span class="font-mono text-red-300 text-xs animate-pulse">PROCESSING REGISTRATION...</span>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-screen" class="hidden text-center py-10">
+          <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <Icon name="lucide:check" class="text-4xl text-red-300" />
+            </div>
+            <h2 class="font-display text-3xl text-white mb-4">REGISTRATION RECEIVED</h2>
+            <p class="font-mono text-zinc-400 text-sm mb-8">
+              Your free registration is recorded. We will send updates to <span id="success-email" class="text-white"></span>.
+              For queries, reach us at <a href="mailto:devupsociety@vjit.ac.in" class="text-red-300 hover:underline">devupsociety@vjit.ac.in</a>.
+            </p>
+
+            <div class="max-w-xl mx-auto mb-8 border-2 border-red-500/30 bg-red-500/10 p-5 text-left">
+              <p class="font-mono text-[11px] text-red-300 uppercase tracking-widest mb-2">Mandatory Step</p>
+              <p class="font-mono text-sm text-white leading-relaxed mb-4">
+                Join the official WhatsApp group now. Detailed registration and next-step instructions will be shared there.
+              </p>
+              <a
+                href="https://chat.whatsapp.com/JbT6E5ut12YDlzsOapRvNY"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-black font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors"
+              >
+                Join WhatsApp Group
+                <Icon name="lucide:external-link" class="w-4 h-4" />
+              </a>
+            </div>
+
+            <div class="glass-panel p-6 clip-corner text-left max-w-xl mx-auto mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-zinc-400">
+                    <div>
+                  <div class="text-zinc-500 uppercase tracking-widest">Registration ID</div>
+                  <div id="success-registration-id" class="text-white text-sm"></div>
+                    </div>
+                    <div>
+                  <div class="text-zinc-500 uppercase tracking-widest">Name</div>
+                  <div id="success-lead-name" class="text-white text-sm"></div>
+                    </div>
+                    <div>
+                  <div class="text-zinc-500 uppercase tracking-widest">Phone</div>
+                  <div id="success-phone" class="text-white text-sm"></div>
+                    </div>
+                    <div>
+                  <div class="text-zinc-500 uppercase tracking-widest">City</div>
+                  <div id="success-city" class="text-white text-sm"></div>
+                    </div>
+                    <div>
+                  <div class="text-zinc-500 uppercase tracking-widest">Current Role</div>
+                  <div id="success-current-role" class="text-white text-sm"></div>
+                    </div>
+                    <div>
+                  <div class="text-zinc-500 uppercase tracking-widest">Organization / College</div>
+                  <div id="success-org" class="text-white text-sm"></div>
+                    </div>
+                    <div>
+                  <div class="text-zinc-500 uppercase tracking-widest">LinkedIn</div>
+                  <div id="success-linkedin" class="text-white text-sm break-all"></div>
+                    </div>
+                </div>
+                <div class="mt-4 text-[10px] text-zinc-500 font-mono uppercase tracking-widest">
+                  Status: Free registration submitted
+                </div>
+            </div>
+            <a href="/events" data-scroll-top class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-widest transition-colors">
+                Return to Events
+            </a>
+        </div>
+
+        <!-- The Form -->
+        <form id="registration-form" class="space-y-8" data-event-fee={event.fee ?? 0}>
+            <input type="hidden" name="event_slug" value={event.slug} />
+            <input type="hidden" name="event_name" value={event.title} />
+
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 border-b border-zinc-800 pb-2">
+              <span class="w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 flex items-center justify-center font-bold text-xs">1</span>
+              <h3 class="font-display text-xl text-white">Section 1: Basic Details</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="font-mono text-xs text-zinc-500 uppercase">Full Name</label>
+                        <input type="text" name="lead_name" required class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" />
+                    </div>
+                    <div class="space-y-2">
+                      <label class="font-mono text-xs text-zinc-500 uppercase">Email</label>
+                        <input type="email" name="lead_email" required class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="font-mono text-xs text-zinc-500 uppercase">Phone Number</label>
+                        <input type="tel" name="lead_phone" required class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" />
+                    </div>
+                    <div class="space-y-2">
+                      <label class="font-mono text-xs text-zinc-500 uppercase">City</label>
+                      <input type="text" name="city" required class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" placeholder="Hyderabad" />
+                    </div>
+                    <div class="space-y-2">
+                      <label class="font-mono text-xs text-zinc-500 uppercase">LinkedIn Profile</label>
+                      <input type="url" name="linkedin" required class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" placeholder="https://linkedin.com/in/your-profile" />
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 border-b border-zinc-800 pb-2 pt-4">
+                  <span class="w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 flex items-center justify-center font-bold text-xs">2</span>
+                  <h3 class="font-display text-xl text-white">Section 2: Profile & Background</h3>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="font-mono text-xs text-zinc-500 uppercase">Current Role</label>
+                  <select name="current_role" id="current-role" required class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors">
+                    <option value="">Select role</option>
+                    <option value="Student">Student</option>
+                    <option value="Founder">Founder</option>
+                    <option value="Working Professional">Working Professional</option>
+                    <option value="Freelancer">Freelancer</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div id="student-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                    <label class="font-mono text-xs text-zinc-500 uppercase">College Name</label>
+                    <input type="text" name="college_name" class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="font-mono text-xs text-zinc-500 uppercase">Year</label>
+                    <input type="text" name="student_year" class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" placeholder="1st / 2nd / 3rd / 4th" />
+                  </div>
+                </div>
+
+                <div id="professional-fields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                    <label class="font-mono text-xs text-zinc-500 uppercase">Company / Startup Name</label>
+                    <input type="text" name="company_name" class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="font-mono text-xs text-zinc-500 uppercase">Role</label>
+                    <input type="text" name="role_title" class="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors" placeholder="Founder / Product Manager / Engineer" />
+                  </div>
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full py-4 bg-red-500 text-black font-mono font-bold uppercase tracking-widest hover:bg-red-400 transition-colors btn-glitch disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500 relative overflow-hidden">
+              <span id="submit-btn-text">Submit Registration</span>
+                <span id="submit-btn-spinner" class="hidden absolute inset-0 flex items-center justify-center gap-3">
+                  <svg class="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Processing...</span>
+                </span>
+            </button>
+
+        </form>
+        )}
+
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<script is:inline define:vars={{ EVENT_SLUG: event.slug }}>
+// ============================================
+// PRODUCTION-READY REGISTRATION CLIENT
+// With comprehensive error handling and debugging
+// ============================================
+
+// Configuration
+const IS_FOUNDERS_MEET = EVENT_SLUG === 'founders-meet-2026';
+
+// Logger
+const logger = {
+  info: (msg, data = {}) => console.log(`[INFO] ${new Date().toISOString()} - ${msg}`, data),
+  error: (msg, err = {}) => console.error(`[ERROR] ${new Date().toISOString()} - ${msg}`, err),
+  debug: (msg, data = {}) => console.log(`[DEBUG] ${new Date().toISOString()} - ${msg}`, data)
+};
+
+// API Functions
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      logger.debug(`Fetch attempt ${i + 1}/${retries}`, { url });
+      const response = await fetch(url, options);
+      logger.debug('Response received', { status: response.status, url });
+      return response;
+    } catch (error) {
+      logger.error(`Fetch attempt ${i + 1} failed`, { url, error });
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
+}
+
+async function submitRegistration(formData) {
+  try {
+    const url = '/api/registrations/register';
+    const response = await fetchWithRetry(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Registration failed');
+    }
+    
+    logger.info('Registration successful', { registrationId: data.registrationId });
+    return data;
+  } catch (error) {
+    logger.error('Registration failed', error);
+    throw error;
+  }
+}
+
+// Validation Functions
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePhone(phone) {
+  const clean = phone.replace(/[\s\-\(\)]/g, '');
+  return /^[0-9]{10}$/.test(clean);
+}
+
+function validateFormData(data) {
+  const errors = [];
+  if (!data.lead_name?.trim()) errors.push('Name is required');
+  if (!data.lead_email?.trim()) errors.push('Email is required');
+  else if (!validateEmail(data.lead_email)) errors.push('Email is invalid');
+  if (!data.lead_phone?.trim()) errors.push('Phone number is required');
+  else if (!validatePhone(data.lead_phone)) errors.push('Phone number must be 10 digits');
+  if (!data.city?.trim()) errors.push('City is required');
+  if (!data.linkedin?.trim()) errors.push('LinkedIn profile is required');
+  if (!data.current_role?.trim()) errors.push('Current role is required');
+
+  if (data.current_role === 'Student') {
+    if (!data.college_name?.trim()) errors.push('College name is required for students');
+    if (!data.student_year?.trim()) errors.push('Year is required for students');
+  } else {
+    if (!data.company_name?.trim()) errors.push('Company / startup name is required');
+    if (!data.role_title?.trim()) errors.push('Role is required');
+  }
+  
+  return { valid: errors.length === 0, errors };
+}
+
+// Countdown Timer
+function initCountdownTimer() {
+  const timerEl = document.getElementById('countdown-timer');
+  if (!timerEl) {
+    logger.error('Countdown timer element not found');
+    return;
+  }
+  
+  const deadlineStr = timerEl.dataset.deadline;
+  if (!deadlineStr) {
+    logger.error('No deadline found in data-deadline attribute');
+    timerEl.textContent = 'Date not set';
+    return;
+  }
+  
+  logger.info('Initializing countdown timer', { deadlineStr });
+  
+  // Parse deadline; if year is missing, assume the event year from current runtime year
+  const normalizedDeadline = /\b\d{4}\b/.test(deadlineStr)
+    ? `${deadlineStr} 23:59:59`
+    : `${deadlineStr}, ${new Date().getFullYear()} 23:59:59`;
+  const deadline = new Date(normalizedDeadline);
+  
+  if (isNaN(deadline.getTime())) {
+    logger.error('Invalid deadline date', { deadlineStr, parsed: deadline });
+    timerEl.textContent = 'Invalid date';
+    return;
+  }
+  
+  logger.info('Deadline parsed successfully', { deadline: deadline.toString() });
+  
+  function updateCountdown() {
+    const now = new Date();
+    const diff = deadline - now;
+    
+    if (diff <= 0) {
+      timerEl.textContent = 'Registration Closed';
+      timerEl.classList.add('text-red-500');
+      timerEl.classList.remove('text-red-300');
+      
+      // Disable form
+      const form = document.getElementById('registration-form');
+      if (form) {
+        form.innerHTML = '<div class="text-center py-10"><p class="font-mono text-red-500 text-sm">Registration has closed.</p></div>';
+      }
+      return;
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    timerEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  }
+  
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+  
+  logger.info('Countdown timer initialized and running');
+}
+
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', async () => {
+  logger.info('Registration page loaded - initializing');
+
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  
+  // Initialize countdown timer
+  initCountdownTimer();
+  
+  try {
+    // ============================================
+    // DOM ELEMENT REFERENCES
+    // ============================================
+    const form = document.getElementById('registration-form');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const successScreen = document.getElementById('success-screen');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitBtnText = document.getElementById('submit-btn-text');
+    const submitBtnSpinner = document.getElementById('submit-btn-spinner');
+    const currentRoleSelect = document.getElementById('current-role');
+    const studentFields = document.getElementById('student-fields');
+    const professionalFields = document.getElementById('professional-fields');
+    const scrollTopLinks = document.querySelectorAll('[data-scroll-top]');
+
+    scrollTopLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    if (!form) {
+      logger.error('Registration form element not found');
+      return;
+    }
+
+    const toggleRoleFields = () => {
+      const role = currentRoleSelect?.value || '';
+
+      if (role === 'Student') {
+        studentFields?.classList.remove('hidden');
+        professionalFields?.classList.add('hidden');
+      } else if (role) {
+        studentFields?.classList.add('hidden');
+        professionalFields?.classList.remove('hidden');
+      } else {
+        studentFields?.classList.add('hidden');
+        professionalFields?.classList.add('hidden');
+      }
+    };
+
+    currentRoleSelect?.addEventListener('change', toggleRoleFields);
+    toggleRoleFields();
+
+
+    // ============================================
+    // FORM SUBMISSION
+    // ============================================
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      logger.info('Form submission started');
+      
+      if (!successScreen || !loadingOverlay) {
+        logger.error('Success screen or loading overlay not found');
+        alert('ERROR: Missing UI elements. Check console.');
+        return;
+      }
+
+      // Show loading
+      loadingOverlay.classList.remove('hidden');
+      loadingOverlay.classList.add('flex');
+      logger.debug('Loading overlay shown');
+      
+      // Disable submit button and show spinner
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtnText?.classList.add('invisible');
+        submitBtnSpinner?.classList.remove('hidden');
+      }
+      
+      // Track form submission in Google Analytics - DISABLED FOR NOW
+      // if (typeof gtag !== 'undefined') {
+      //   gtag('event', 'registration_started', {
+      //     event_category: 'registration',
+      //     event_label: formData.get('event_name') || 'unknown'
+      //   });
+      // }
+      
+      try {
+        // Extract form data
+        const formData = new FormData(form);
+        logger.debug('Extracting form data...');
+
+        const participantName = (formData.get('lead_name') || '').toString();
+        const currentRole = (formData.get('current_role') || '').toString();
+        const city = (formData.get('city') || '').toString();
+        const linkedin = (formData.get('linkedin') || '').toString();
+        const collegeName = (formData.get('college_name') || '').toString();
+        const studentYear = (formData.get('student_year') || '').toString();
+        const companyName = (formData.get('company_name') || '').toString();
+        const roleTitle = (formData.get('role_title') || '').toString();
+
+        const leadCollege = currentRole === 'Student' ? collegeName : companyName;
+        const designation = currentRole === 'Student'
+          ? `Student - ${studentYear}`
+          : roleTitle;
+
+        const registrationData = {
+          event_slug: formData.get('event_slug'),
+          event_name: formData.get('event_name'),
+          lead_name: formData.get('lead_name'),
+          lead_email: formData.get('lead_email'),
+          lead_phone: formData.get('lead_phone'),
+          lead_college: leadCollege,
+          designation,
+          city,
+          linkedin,
+          current_role: currentRole,
+          college_name: collegeName,
+          student_year: studentYear,
+          company_name: companyName,
+          role_title: roleTitle,
+        };
+        
+        logger.info('Form data extracted successfully', { 
+          leadName: registrationData.lead_name,
+          leadEmail: registrationData.lead_email,
+        });
+
+        // Validate form data
+        logger.debug('Validating form data...');
+        const validation = validateFormData(registrationData);
+        
+        if (!validation.valid) {
+          logger.error('Form validation failed', { errors: validation.errors });
+          loadingOverlay.classList.add('hidden');
+          loadingOverlay.classList.remove('flex');
+          
+          // Re-enable submit button
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtnText.classList.remove('invisible');
+            submitBtnSpinner.classList.add('hidden');
+          }
+          
+          alert('Please fix the following errors:\n\n' + validation.errors.map(e => `• ${e}`).join('\n'));
+          return;
+        }
+
+        logger.info('Form validation passed - submitting to backend...');
+
+        // Submit registration
+        const result = await submitRegistration(registrationData);
+
+        logger.info('✅ Registration API call successful!', { 
+          registrationId: result.registrationId,
+          leadEmail: result.leadEmail
+        });
+
+        // Success!
+        logger.info('Showing success screen in 1 second...');
+        
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+          loadingOverlay.classList.remove('flex');
+          form.classList.add('hidden');
+          successScreen.classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          
+          logger.debug('Success screen made visible');
+          
+          // Update success screen with data
+          const setTextContent = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.textContent = text;
+              logger.debug(`Set ${id} to: ${text}`);
+            } else {
+              logger.error(`Element not found: ${id}`);
+            }
+          };
+          
+          setTextContent('success-registration-id', result.registrationId || '');
+          setTextContent('success-lead-name', result.leadName || '');
+          setTextContent('success-phone', result.leadPhone || '');
+          setTextContent('success-city', city || '');
+          setTextContent('success-current-role', currentRole || '');
+          setTextContent('success-org', leadCollege || '');
+          setTextContent('success-linkedin', linkedin || '');
+          setTextContent('success-email', result.leadEmail || '');
+          
+          // Track successful registration in Google Analytics - DISABLED FOR NOW
+          // if (typeof gtag !== 'undefined') {
+          //   gtag('event', 'registration_completed', {
+          //     event_category: 'registration',
+          //     event_label: result.teamNumber || 'unknown',
+          //     value: result.paymentAmount || 0
+          //   });
+          // }
+          
+          logger.info('✅ SUCCESS SCREEN DISPLAYED');
+        }, 1000);
+
+      } catch (error) {
+        logger.error('❌ Registration submission failed', error);
+        logger.error('Error details:', {
+          message: error.message,
+          stack: error.stack
+        });
+        
+        loadingOverlay.classList.add('hidden');
+        loadingOverlay.classList.remove('flex');
+        
+        // Re-enable submit button
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtnText?.classList.remove('invisible');
+          submitBtnSpinner?.classList.add('hidden');
+        }
+        
+        // Track error in Google Analytics - DISABLED FOR NOW
+        // if (typeof gtag !== 'undefined') {
+        //   gtag('event', 'registration_error', {
+        //     event_category: 'registration',
+        //     event_label: error.message || 'unknown_error'
+        //   });
+        // }
+        
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(`Registration failed: ${errorMessage}\n\nCheck console (F12) for details.`);
+      }
+    });
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    logger.info('Initializing registration form');
+    
+    
+    logger.info('Registration page fully initialized and ready');
+
+  } catch (error) {
+    logger.error('Critical error during initialization', error);
+    alert('Failed to initialize registration form. Please refresh the page.');
+  }
+});
+</script>

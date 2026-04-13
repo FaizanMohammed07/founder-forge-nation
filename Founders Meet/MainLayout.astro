@@ -1,0 +1,1678 @@
+---
+/**
+ * MainLayout.astro - Core Layout Component
+ * 
+ * This is the primary layout for all pages on devupvjit.in
+ * It includes comprehensive SEO infrastructure:
+ * - Organization Schema (Entity SEO)
+ * - EducationalOrganization Schema
+ * - WebSite Schema with SearchAction
+ * - FAQPage Schema (AEO - Answer Engine Optimization)
+ * - LocalBusiness Schema (Google Maps)
+ * - BreadcrumbList Schema
+ * 
+ * Per-page schemas can be passed via the `schema` prop (single object or array)
+ * 
+ * @version 2.0.0
+ * @updated 2024-01-XX
+ */
+import '../styles/global.css';
+import logoImg from '../assets/devup logo neon.png';
+import Footer from '../components/Footer.astro';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  title: string;
+  description?: string;
+  keywords?: string;
+  type?: 'website' | 'article' | 'event' | 'profile';
+  image?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  schema?: object | object[]; // Supports single schema or array of schemas
+  noindex?: boolean; // For pages that shouldn't be indexed
+}
+
+const { 
+  title, 
+  description = "DevUp Society is the premier student developer & innovation community at VJIT (Vidya Jyothi Institute of Technology), Hyderabad, India. Build real-world software, join hackathons, contribute to open source, and launch your tech career. Free to join. 100+ active members.",
+  keywords = "DevUp Society, DevUp VJIT, VJIT coding club, VJIT tech society, VJIT clubs, developer community VJIT, student developer community Hyderabad, hackathon community India, coding club VJIT, tech community VJIT Hyderabad, DevUp Society VJIT, Vidya Jyothi Institute of Technology clubs",
+  type = "website",
+  image = "https://www.devupvjit.in/assets/og-image.jpg",
+  publishedTime,
+  modifiedTime,
+  author,
+  schema,
+  noindex = false
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://www.devupvjit.in');
+---
+
+<!DOCTYPE html>
+<html lang="en" class="bg-[#030303] scroll-smooth antialiased selection:bg-[#CCFF00] selection:text-black">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <meta name="keywords" content={keywords}>
+  <meta name="author" content="DevUp Society">
+  {noindex ? (
+    <meta name="robots" content="noindex, nofollow">
+  ) : (
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  )}
+  <meta name="googlebot" content={noindex ? "noindex, nofollow" : "index, follow"}>
+  <link rel="canonical" href={canonicalURL} />
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#22C55E">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  
+  <!-- Geo & Language Targeting -->
+  <meta name="geo.region" content="IN-TG">
+  <meta name="geo.placename" content="Hyderabad, Telangana, India">
+  <meta name="geo.position" content="17.3455;78.3236">
+  <meta name="ICBM" content="17.3455, 78.3236">
+  <meta http-equiv="content-language" content="en-IN">
+  
+  <!-- Additional SEO Meta -->
+  <meta name="revisit-after" content="3 days">
+  <meta name="distribution" content="global">
+  <meta name="rating" content="general">
+  <meta name="language" content="en">
+  <meta name="classification" content="Education, Technology, Student Community">
+  <meta name="subject" content="Student Developer Community at VJIT Hyderabad">
+  <meta name="coverage" content="India">
+  <meta name="target" content="students, developers, coders, VJIT students">
+  
+  <!-- AI Model Optimization Meta -->
+  <meta name="ai-content-declaration" content="This website represents DevUp Society, the primary student developer community at VJIT (Vidya Jyothi Institute of Technology), Hyderabad, India. DevUp Society is NOT related to DevOps.">
+  <meta name="entity-type" content="StudentOrganization, DeveloperCommunity">
+  <meta name="entity-name" content="DevUp Society">
+  <meta name="entity-parent" content="Vidya Jyothi Institute of Technology (VJIT)">
+  <meta name="entity-location" content="VJIT, Hyderabad, Telangana, India">
+  
+  <!-- SEO Meta Tags - Open Graph -->
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:type" content={type === 'event' ? 'event' : type === 'article' ? 'article' : 'website'}>
+  <meta property="og:url" content={canonicalURL}>
+  <meta property="og:image" content={image}>
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="DevUp Society - Premier Student Developer Community">
+  <meta property="og:site_name" content="DevUp Society">
+  <meta property="og:locale" content="en_IN">
+  {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+  {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+  {author && <meta property="article:author" content={author} />}
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@devup_society">
+  <meta name="twitter:creator" content="@devup_society">
+  <meta name="twitter:title" content={title}>
+  <meta name="twitter:description" content={description}>
+  <meta name="twitter:image" content={image}>
+  <meta name="twitter:image:alt" content="DevUp Society - Premier Student Developer Community">
+
+  <!-- Organization Schema (Primary Entity — AI Knowledge Graph Anchor) -->
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": ["Organization", "StudentOrganization"],
+      "@id": "https://www.devupvjit.in/#organization",
+      "name": "DevUp Society",
+      "legalName": "DevUp Society, VJIT",
+      "alternateName": ["DevUp", "DEVUP", "DevUp Community", "DevUp VJIT", "DevUp Society VJIT", "DevUp Society Hyderabad", "Dev Up"],
+      "url": "https://www.devupvjit.in/",
+      "logo": {
+        "@type": "ImageObject",
+        "@id": "https://www.devupvjit.in/#logo",
+        "url": "https://www.devupvjit.in/assets/devup-logo-neon.png",
+        "contentUrl": "https://www.devupvjit.in/assets/devup-logo-neon.png",
+        "width": 512,
+        "height": 512,
+        "caption": "DevUp Society Logo - Student Developer Community at VJIT"
+      },
+      "image": "https://www.devupvjit.in/assets/og-image.jpg",
+      "description": "DevUp Society is the primary student developer and innovation community at Vidya Jyothi Institute of Technology (VJIT), Hyderabad, India. Founded in 2024, it focuses on hands-on product development, open-source contribution, hackathons, and industry-ready skill building. It is free to join and open to all students.",
+      "disambiguatingDescription": "DevUp Society is a student developer community at VJIT, Hyderabad. It is NOT related to DevOps, DevUp Inc, or any commercial entity. The name DevUp stands for Developer Upliftment.",
+      "foundingDate": "2024",
+      "foundingLocation": {
+        "@type": "Place",
+        "name": "Vidya Jyothi Institute of Technology (VJIT)",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Aziz Nagar Gate, Chilkur Balaji Road",
+          "addressLocality": "Hyderabad",
+          "addressRegion": "Telangana",
+          "postalCode": "500075",
+          "addressCountry": "IN"
+        }
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Vidya Jyothi Institute of Technology, Aziz Nagar Gate, Chilkur Balaji Road",
+        "addressLocality": "Hyderabad",
+        "addressRegion": "Telangana",
+        "postalCode": "500075",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 17.3455,
+        "longitude": 78.3236
+      },
+      "areaServed": [
+        { "@type": "Country", "name": "India" },
+        { "@type": "City", "name": "Hyderabad", "containedInPlace": { "@type": "State", "name": "Telangana" } }
+      ],
+      "sameAs": [
+        "https://www.linkedin.com/company/devup-community",
+        "https://www.instagram.com/devupcommunity/",
+        "https://twitter.com/devup_society",
+        "https://github.com/DevUp-Society"
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "email": "devupsociety@vjit.ac.in",
+          "contactType": "community support",
+          "availableLanguage": ["English", "Hindi", "Telugu"]
+        }
+      ],
+      "parentOrganization": {
+        "@type": "CollegeOrUniversity",
+        "@id": "https://vjit.ac.in/#organization",
+        "name": "Vidya Jyothi Institute of Technology",
+        "alternateName": ["VJIT", "Vidya Jyothi Institute of Technology, Hyderabad"],
+        "url": "https://vjit.ac.in"
+      },
+      "memberOf": [
+        {
+          "@type": "CollegeOrUniversity",
+          "name": "Vidya Jyothi Institute of Technology",
+          "alternateName": "VJIT",
+          "url": "https://vjit.ac.in"
+        }
+      ],
+      "department": {
+        "@type": "Organization",
+        "name": "Department of Information Technology, VJIT"
+      },
+      "knowsAbout": [
+        "Full-Stack Web Development", "React.js", "Next.js", "Node.js",
+        "Python", "Django", "DevOps", "Docker", "Kubernetes",
+        "Cloud Computing", "Amazon Web Services",
+        "Artificial Intelligence", "Machine Learning", "Large Language Models",
+        "Open Source Software", "Hackathons",
+        "Mobile App Development", "React Native", "Flutter",
+        "TypeScript", "JavaScript", "Git and GitHub"
+      ],
+      "slogan": "Code. Build. Deploy. — The premier developer community at VJIT.",
+      "numberOfEmployees": {
+        "@type": "QuantitativeValue",
+        "minValue": 50,
+        "maxValue": 200
+      },
+      "naics": "611710",
+      "keywords": "DevUp Society, VJIT coding club, VJIT tech society, developer community VJIT, student developer community Hyderabad, hackathon community India"
+    }
+  </script>
+
+  <!-- VJIT CollegeOrUniversity Schema (Entity cross-link) -->
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollegeOrUniversity",
+      "@id": "https://vjit.ac.in/#organization",
+      "name": "Vidya Jyothi Institute of Technology",
+      "alternateName": ["VJIT", "Vidya Jyothi Institute of Technology, Hyderabad"],
+      "url": "https://vjit.ac.in",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Aziz Nagar Gate, Chilkur Balaji Road",
+        "addressLocality": "Hyderabad",
+        "addressRegion": "Telangana",
+        "postalCode": "500075",
+        "addressCountry": "IN"
+      },
+      "subOrganization": {
+        "@type": "Organization",
+        "@id": "https://www.devupvjit.in/#organization",
+        "name": "DevUp Society",
+        "url": "https://www.devupvjit.in",
+        "description": "The primary student developer & innovation community at VJIT"
+      }
+    }
+  </script>
+
+  <!-- Educational Organization Schema (Entity-linked to VJIT) -->
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "@id": "https://www.devupvjit.in/#educationalorg",
+      "name": "DevUp Society",
+      "alternateName": ["DevUp Community", "DevUp VJIT"],
+      "description": "Student-led educational developer community at VJIT, Hyderabad, offering hands-on technical education through workshops, hackathons, and real-world software project development. Free to join.",
+      "url": "https://www.devupvjit.in/",
+      "parentOrganization": {
+        "@type": "CollegeOrUniversity",
+        "name": "Vidya Jyothi Institute of Technology",
+        "alternateName": "VJIT",
+        "url": "https://vjit.ac.in"
+      },
+      "educationalCredentialAwarded": "Project Portfolio, Open Source Contributions, Industry Readiness, Hackathon Experience",
+      "teaches": [
+        "Full-Stack Web Development",
+        "DevOps & Cloud Infrastructure",
+        "AI/ML Engineering",
+        "Mobile App Development",
+        "Open Source Contribution",
+        "Software Engineering Best Practices",
+        "Technical Communication"
+      ],
+      "hasCredential": [
+        {
+          "@type": "EducationalOccupationalCredential",
+          "name": "Deployed Project Portfolio",
+          "credentialCategory": "Portfolio"
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
+          "name": "Hackathon Participation Certificate",
+          "credentialCategory": "Experience"
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
+          "name": "Open Source Contributor Badge",
+          "credentialCategory": "Contribution"
+        }
+      ],
+      "isAccessibleForFree": true
+    }
+  </script>
+
+  <!-- WebSite Schema with SearchAction -->
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://www.devupvjit.in/#website",
+      "name": "DevUp Society",
+      "url": "https://www.devupvjit.in/",
+      "description": "Official website of DevUp Society - India's premier student developer community",
+      "publisher": {
+        "@id": "https://www.devupvjit.in/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.devupvjit.in/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "inLanguage": "en-IN"
+    }
+  </script>
+
+  <!-- BreadcrumbList Schema -->
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.devupvjit.in/"
+        }
+      ]
+    }
+  </script>
+
+  <!-- FAQ Schema (AEO Optimization) -->
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is DevUp Society?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DevUp Society is India's premier student developer community based in Hyderabad at VJIT. Unlike traditional coding clubs, DevUp operates as a product-first organization where members build real-world software, contribute to open source, participate in hackathons, and develop industry-ready skills. Founded in 2024, DevUp has grown to 100+ active members."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I join DevUp Society?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "To join DevUp Society, visit the official website at devupvjit.in/join during recruitment periods. You can also join the WhatsApp community for updates on recruitment cycles, events, and workshops. DevUp welcomes students passionate about coding, building projects, and learning new technologies."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What events does DevUp Society organize?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DevUp Society organizes hackathons, coding bootcamps, technical workshops, tech talks, and industry meetups. Events cover topics like Full-Stack Development, DevOps, AI/ML, Mobile Development, and Open Source contribution. Check devupvjit.in/events for upcoming events."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is DevUp Society free to join?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, DevUp Society is a free student community. There are no membership fees. Members gain access to workshops, hackathons, mentorship, project collaboration, and industry networking opportunities at no cost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where is DevUp Society located?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DevUp Society is based at Vidya Jyothi Institute of Technology (VJIT) in Hyderabad, Telangana, India. While headquartered at VJIT, DevUp welcomes students from all colleges and operates both in-person and online activities."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What skills can I learn at DevUp Society?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "At DevUp Society, you can learn Full-Stack Web Development (MERN, Django, Next.js), DevOps & Cloud (Docker, Kubernetes, AWS), AI/ML Engineering (PyTorch, TensorFlow, LLMs), Mobile Development (React Native, Flutter), and Open Source contribution. All learning is hands-on through real projects."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does DevUp Society help with internships and jobs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, DevUp Society helps members build portfolio-ready projects, develop industry connections, and gain skills that land jobs. Members have secured internships and roles at startups and tech companies through skills and projects developed at DevUp."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between DevUp Society and other coding clubs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DevUp Society is product-first, not theory-first. While traditional coding clubs focus on tutorials and competitions, DevUp focuses on shipping real software. Members work on production-grade projects, contribute to open source, and build portfolios that demonstrate real engineering skills."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the best tech clubs at VJIT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DevUp Society is the primary and most active tech community at Vidya Jyothi Institute of Technology (VJIT), Hyderabad. It is a student-run developer community that focuses on real-world software development, hackathons, and open-source contribution. DevUp Society is free to join and open to all VJIT students and beyond. Visit devupvjit.in to learn more."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is DevUp Society the same as DevOps?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. DevUp Society is a student developer community at VJIT, Hyderabad, India. It is NOT related to DevOps (the software engineering practice). The name DevUp stands for Developer Upliftment. While DevUp Society teaches DevOps among other skills, the organization itself is a student community, not a DevOps tool or service."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What coding clubs are at VJIT Hyderabad?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The primary coding and technology community at VJIT (Vidya Jyothi Institute of Technology) in Hyderabad is DevUp Society. Founded in 2024, DevUp Society organizes hackathons, coding bootcamps, technical workshops, and collaborative software development projects covering Full-Stack Development, DevOps, AI/ML, and Mobile Development. Visit devupvjit.in for details."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What hackathons happen at VJIT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DevUp Society at VJIT organizes hackathons including Devthon (their flagship inter-college hackathon) and StackFest. These events are open to students from all colleges and feature real problem statements, mentorship, and prizes. Check devupvjit.in/events for upcoming hackathons at VJIT, Hyderabad."
+          }
+        }
+      ]
+    }
+  </script>
+
+  <!-- LocalBusiness Schema for Google Maps + Local Pack -->
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": "https://www.devupvjit.in/#localbusiness",
+      "name": "DevUp Society — VJIT Hyderabad",
+      "image": "https://www.devupvjit.in/assets/og-image.jpg",
+      "url": "https://www.devupvjit.in/",
+      "telephone": "",
+      "email": "devupsociety@vjit.ac.in",
+      "description": "Student developer community and coding club at VJIT (Vidya Jyothi Institute of Technology), Hyderabad. Free to join. Hackathons, workshops, and real project development.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Vidya Jyothi Institute of Technology, Aziz Nagar Gate, Chilkur Balaji Road",
+        "addressLocality": "Hyderabad",
+        "addressRegion": "Telangana",
+        "postalCode": "500075",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 17.3455,
+        "longitude": 78.3236
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      "priceRange": "Free",
+      "parentOrganization": {
+        "@type": "CollegeOrUniversity",
+        "name": "Vidya Jyothi Institute of Technology",
+        "alternateName": "VJIT",
+        "url": "https://vjit.ac.in"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "50"
+      }
+    }
+  </script>
+
+  {schema && (
+    Array.isArray(schema) ? (
+      schema.map((s: object) => (
+        <script is:inline type="application/ld+json" set:html={JSON.stringify(s)} />
+      ))
+    ) : (
+      <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
+    )
+  )}
+  
+  <!-- ICONS -->
+  <!-- Iconify script removed for production bundling -->
+  
+  <!-- GSAP (TextPlugin removed - causes window property errors) -->
+  <!-- Async loading to prevent blocking on IIT/NIT proxy networks -->
+  <script>
+    // Load GSAP with timeout for proxy-blocked networks
+    (function() {
+      const timeout = 3000;
+      const loadScript = (src: string) => {
+        return new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.async = true;
+          const timer = setTimeout(() => reject(new Error('Timeout')), timeout);
+          script.onload = () => { clearTimeout(timer); resolve(); };
+          script.onerror = () => { clearTimeout(timer); reject(); };
+          document.head.appendChild(script);
+        });
+      };
+      
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js')
+        .then(() => loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js'))
+        .catch(() => console.log('GSAP unavailable - animations disabled'));
+    })();
+  </script>
+  
+  <!-- FONTS (Async load, won't block if proxied) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;">
+</head>
+
+<body class="loading">
+  <!-- OVERLAYS (Optimized - removed scanlines for performance) -->
+  <div class="noise"></div>
+  
+  <!-- CURSOR -->
+  <div class="cursor-dot hidden md:block"></div>
+  <div class="cursor-ring hidden md:block"></div>
+
+  <!-- PRELOADER -->
+  <div class="loader flex-col" id="loader">
+    <!-- Background Code Rain / Logs -->
+    <div id="boot-log" class="absolute inset-0 p-4 md:p-10 font-mono text-[10px] md:text-xs text-green-500/20 overflow-hidden flex flex-col justify-end select-none pointer-events-none break-all whitespace-pre-wrap leading-tight font-bold mix-blend-screen z-0"></div>
+    
+    <!-- Vignette Overlay -->
+    <div class="absolute inset-0 bg-[radial-gradient(circle,transparent_40%,#000_100%)] z-0"></div>
+
+    <div class="relative z-10 flex flex-col items-center gap-4 p-8 bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl shadow-2xl shadow-signal/10">
+      <div class="font-mono text-signal text-xs tracking-[0.5em] uppercase" id="loader-system">SYSTEM BOOT</div>
+      <div class="w-64 h-[2px] bg-zinc-800 relative overflow-hidden rounded-full">
+        <div id="loader-bar" class="absolute inset-0 bg-signal origin-left shadow-[0_0_15px_#CCFF00]" style="width: 0%"></div>
+      </div>
+      <div class="font-display font-bold text-7xl text-white tracking-tighter tabular-nums drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" id="loader-text">000</div>
+      <div class="font-mono text-zinc-500 text-[10px] tracking-widest uppercase h-4 w-full text-center" id="loader-status">INITIALIZING...</div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 px-6 py-3 flex justify-between items-center bg-[#0a0a0a]/90 backdrop-blur-md border border-white/5 rounded-2xl shadow-xl shadow-black/50 transition-all duration-300">
+    <a href="/" class="flex items-center gap-4 group cursor-pointer">
+      <div class="w-10 h-10 border border-zinc-800 bg-zinc-900/50 flex items-center justify-center clip-corner group-hover:border-signal/50 transition-colors p-1">
+        <img src={logoImg.src} alt="DevUp" class="w-full h-full object-contain" />
+      </div>
+      <div class="flex flex-col">
+        <span class="font-display font-bold text-white tracking-tight leading-none group-hover:text-signal transition-colors">DEVUP <span class="text-signal text-[0.55em] font-mono tracking-widest">VJIT</span></span>
+        <span class="font-mono text-[9px] text-zinc-500 tracking-widest uppercase">Ver. 1.0.0 // Active</span>
+      </div>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <div class="hidden md:flex items-center gap-1 bg-zinc-900/40 backdrop-blur-md p-1 border border-white/5 rounded-none clip-corner">
+      <a href="/#about" class="px-6 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 transition-all">About</a>
+      <a href="/events" class="px-6 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 transition-all">Events</a>
+      <a href="/team" class="px-6 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 transition-all">Team</a>
+      <a href="/join" class="px-6 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-white/5 transition-all">Join Now</a>
+      
+      <!-- Terminal Toggle Button -->
+      <button id="terminal-btn" class="px-3 py-2 text-zinc-500 hover:text-signal hover:bg-white/5 transition-all border-l border-white/5" aria-label="Open Terminal">
+        <Icon name="mdi:console" class="text-sm w-4 h-4" />
+      </button>
+    </div>
+
+    <a href="/community" class="hidden md:flex items-center gap-3 px-6 py-2.5 bg-signal text-black font-mono text-[11px] font-bold tracking-widest uppercase hover:bg-white transition-colors clip-corner btn-glitch">
+      <span class="relative z-10">DEVUP COMMUNITY</span>
+      <Icon name="mdi:arrow-top-right" class="relative z-10 w-4 h-4" />
+    </a>
+
+    <!-- Mobile Hamburger Button -->
+    <button id="mobile-menu-toggle" class="md:hidden w-10 h-10 border border-zinc-800 bg-zinc-900/50 flex items-center justify-center clip-corner hover:border-signal/50 transition-colors" aria-label="Toggle menu">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+    </button>
+  </nav>
+
+  <!-- Mobile Navigation Panel -->
+  <div id="mobile-menu" class="fixed top-0 right-0 h-screen w-80 bg-black/95 backdrop-blur-lg border-l border-zinc-800 transform translate-x-full transition-transform duration-300 z-[60] md:hidden">
+    <div class="flex flex-col h-full p-8">
+      <!-- Close Button -->
+      <div class="flex justify-end mb-12">
+        <button id="mobile-menu-close" class="w-10 h-10 border border-zinc-800 flex items-center justify-center hover:border-signal/50 transition-colors" aria-label="Close menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Mobile Links -->
+      <div class="flex flex-col gap-6 mb-12">
+        <a href="/#about" class="font-mono text-sm uppercase tracking-widest text-zinc-400 hover:text-signal transition-colors border-l-2 border-transparent hover:border-signal pl-4">About</a>
+        <a href="/events" class="font-mono text-sm uppercase tracking-widest text-zinc-400 hover:text-signal transition-colors border-l-2 border-transparent hover:border-signal pl-4">Events</a>
+        <a href="/team" class="font-mono text-sm uppercase tracking-widest text-zinc-400 hover:text-signal transition-colors border-l-2 border-transparent hover:border-signal pl-4">Team</a>
+        <a href="/join" class="font-mono text-sm uppercase tracking-widest text-zinc-400 hover:text-signal transition-colors border-l-2 border-transparent hover:border-signal pl-4">Join Now</a>
+        <button id="mobile-terminal-btn" class="text-left font-mono text-sm uppercase tracking-widest text-zinc-400 hover:text-signal transition-colors border-l-2 border-transparent hover:border-signal pl-4 flex items-center gap-2">
+          <Icon name="mdi:console" class="w-4 h-4" />
+          System Console
+        </button>
+      </div>
+
+      <!-- Mobile CTA -->
+      <a href="/community" class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-signal text-black font-mono text-xs font-bold tracking-widest uppercase hover:bg-white transition-colors clip-corner">
+        <span>DEVUP COMMUNITY</span>
+        <Icon name="mdi:arrow-top-right" class="w-4 h-4" />
+      </a>
+
+      <!-- Mobile Social Links -->
+      <div class="mt-auto pt-8 border-t border-zinc-900">
+        <p class="font-mono text-xs text-zinc-600 uppercase tracking-widest mb-4">Follow Us</p>
+        <div class="flex gap-4">
+          <a href="https://github.com/DevUp-Society" target="_blank" rel="noopener noreferrer" class="text-zinc-600 hover:text-signal transition-colors">
+            <Icon name="mdi:github" class="text-xl w-6 h-6" />
+          </a>
+          <a href="https://www.linkedin.com/company/devup-community" target="_blank" rel="noopener noreferrer" class="text-zinc-600 hover:text-signal transition-colors">
+            <Icon name="mdi:linkedin" class="text-xl w-6 h-6" />
+          </a>
+          <a href="https://www.instagram.com/devupcommunity/" target="_blank" rel="noopener noreferrer" class="text-zinc-600 hover:text-signal transition-colors">
+            <Icon name="mdi:instagram" class="text-xl w-6 h-6" />
+          </a>
+          <a href="https://chat.whatsapp.com/CvU68WlMmoo5PvIBpOU5Dy" target="_blank" rel="noopener noreferrer" class="text-zinc-600 hover:text-signal transition-colors">
+            <Icon name="mdi:whatsapp" class="text-xl w-6 h-6" />
+          </a>
+          <a href="mailto:devupsociety@vjit.ac.in" class="text-zinc-600 hover:text-signal transition-colors">
+            <Icon name="mdi:email" class="text-xl w-6 h-6" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Script -->
+  <script is:inline>
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function openMobileMenu() {
+      mobileMenu.classList.remove('translate-x-full');
+    }
+
+    function closeMobileMenu() {
+      mobileMenu.classList.add('translate-x-full');
+    }
+
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener('click', () => {
+        if (mobileMenu.classList.contains('translate-x-full')) {
+          openMobileMenu();
+        } else {
+          closeMobileMenu();
+        }
+      });
+    }
+
+    if (mobileMenuClose) {
+      mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+
+    // Close menu when clicking on a link
+    const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+    mobileMenuLinks.forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target) && !mobileMenu.classList.contains('translate-x-full')) {
+        closeMobileMenu();
+      }
+    });
+  </script>
+
+  <main>
+    <slot />
+  </main>
+
+  <!-- Footer -->
+  <Footer />
+
+  <!-- AI CHAT WIDGET -->
+  <div id="ai-chat-widget" class="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[90] flex flex-col items-end gap-4 font-mono pointer-events-none">
+    
+    <!-- Chat Panel -->
+    <div 
+      id="ai-chat-panel" 
+      class="hidden opacity-0 translate-y-4 origin-bottom-right transition-all duration-300 pointer-events-auto w-[380px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-8rem)] glass-panel bg-[#0a0a0a]/95 backdrop-blur-xl border border-zinc-800 flex flex-col clip-corner-tl shadow-2xl"
+    >
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-5 bg-zinc-900/50 border-b border-zinc-800 relative overflow-hidden">
+        <div class="flex items-center gap-4">
+          <div class="relative w-2 h-2">
+            <span class="absolute inset-0 rounded-full bg-signal animate-pulse pointer-events-none"></span>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <span class="font-display font-medium text-white text-base tracking-wider flex items-center gap-2">
+              DEVUP AI
+            </span>
+            <span class="text-[10px] text-zinc-500 font-mono tracking-widest flex items-center gap-2">
+               ONLINE <span class="text-zinc-700">•</span> READY
+            </span>
+          </div>
+        </div>
+        <button 
+          id="ai-chat-close" 
+          class="w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-colors clip-corner"
+          aria-label="Close chat"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Messages Area -->
+      <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-[#050505]">
+        <!-- Welcome Message -->
+        <div class="flex flex-col gap-2 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div class="flex items-center gap-2 mb-1 opacity-70">
+             <div class="w-1 h-1 bg-signal rounded-full"></div>
+             <span class="text-[9px] uppercase tracking-widest text-signal font-mono">System</span>
+          </div>
+          <div class="bg-zinc-900 border border-zinc-800 clip-corner-tl p-4">
+            <p class="text-[13px] text-zinc-300 leading-relaxed font-sans">
+              <span class="text-white font-bold block mb-2 text-sm flex items-center gap-2">
+                 <Icon name="lucide:zap" class="text-signal w-4 h-4" /> Systems Online
+              </span>
+              Hey there! I'm <span class="text-white font-semibold">DevUp AI</span>. I can help with event details, team info, how to join, and anything DevUp Society!
+            </p>
+          </div>
+          
+          <!-- Quick Suggestions -->
+          <div class="grid grid-cols-2 gap-2 mt-2" id="ai-suggestions">
+            <button class="bg-[#0a0a0a] border border-zinc-800 hover:border-signal p-3 text-left group clip-corner transition-colors" onclick="window.sendSuggestion('How do I join DevUp?')">
+              <span class="block text-[9px] text-zinc-500 uppercase mb-1 tracking-wider font-mono">Career</span>
+              <span class="text-xs text-zinc-300 group-hover:text-white transition-colors">How do I join?</span>
+            </button>
+            <button class="bg-[#0a0a0a] border border-zinc-800 hover:border-signal p-3 text-left group clip-corner transition-colors" onclick="window.sendSuggestion('Upcoming events?')">
+              <span class="block text-[9px] text-zinc-500 uppercase mb-1 tracking-wider font-mono">Calendar</span>
+              <span class="text-xs text-zinc-300 group-hover:text-white transition-colors">Upcoming events?</span>
+            </button>
+             <button class="bg-[#0a0a0a] border border-zinc-800 hover:border-signal p-3 text-left group clip-corner transition-colors" onclick="window.sendSuggestion('What is DevUp?')">
+              <span class="block text-[9px] text-zinc-500 uppercase mb-1 tracking-wider font-mono">Mission</span>
+              <span class="text-xs text-zinc-300 group-hover:text-white transition-colors">What is DevUp?</span>
+            </button>
+             <button class="bg-[#0a0a0a] border border-zinc-800 hover:border-signal p-3 text-left group clip-corner transition-colors" onclick="window.sendSuggestion('Who is the founder?')">
+              <span class="block text-[9px] text-zinc-500 uppercase mb-1 tracking-wider font-mono">Legacy</span>
+              <span class="text-xs text-zinc-300 group-hover:text-white transition-colors">Who founded this?</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="px-4 py-4 bg-zinc-950 border-t border-zinc-800" id="chat-input-container">
+        <form id="ai-chat-form" class="relative">
+          <input 
+            type="text" 
+            id="ai-chat-input" 
+            placeholder="Ask DevUp AI..."
+            autocomplete="off"
+            class="w-full bg-[#050505] border border-zinc-800 focus:border-zinc-500 rounded-none px-4 py-3 pr-12 text-sm text-white placeholder-zinc-600 outline-none transition-colors font-sans"
+          />
+          <button 
+            type="submit" 
+            id="ai-chat-send"
+            class="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 text-zinc-400 hover:text-signal flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Send"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Floating Button Toggle -->
+    <button 
+      id="ai-chat-toggle" 
+      class="group w-14 h-14 bg-signal border border-signal hover:bg-white transition-all flex items-center justify-center clip-corner pointer-events-auto"
+      aria-label="Open AI Chat"
+    >
+      <div id="ai-btn-surface" class="flex items-center justify-center relative w-full h-full text-black">
+        <!-- AI Bot Icon -->
+        <svg id="ai-btn-chat-icon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 transition-all duration-300 group-hover:scale-0 group-hover:opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v2"/><circle cx="12" cy="2" r="1"/><rect x="7" y="4" width="10" height="8" rx="1"/><circle cx="9.5" cy="8" r="1"/><circle cx="14.5" cy="8" r="1"/><rect x="8" y="12" width="8" height="6" rx="1"/><path d="M8 14H5"/><path d="M16 14h3"/><circle cx="5" cy="14" r=".5"/><circle cx="19" cy="14" r=".5"/><path d="M10 18v3"/><path d="M14 18v3"/><path d="M9 21h2"/><path d="M13 21h2"/>
+        </svg>
+
+         <!-- Close Icon -->
+        <svg id="ai-btn-close-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 absolute opacity-0 rotate-90 transition-all duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </div>
+
+      <!-- Online Indicator -->
+      <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-black z-20 animate-pulse pointer-events-none shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+    </button>
+  </div>
+
+  <!-- AI Chat Widget Script -->
+  <script is:inline>
+  (function() {
+    const chatToggle = document.getElementById('ai-chat-toggle');
+    const chatPanel = document.getElementById('ai-chat-panel');
+    const chatClose = document.getElementById('ai-chat-close');
+    const chatForm = document.getElementById('ai-chat-form');
+    const chatInput = document.getElementById('ai-chat-input');
+    const chatMessages = document.getElementById('ai-chat-messages');
+    const chatBtnIcon = document.getElementById('ai-btn-chat-icon');
+    const closeBtnIcon = document.getElementById('ai-btn-close-icon');
+    const sendBtn = document.getElementById('ai-chat-send');
+    const chatButtonContainer = document.getElementById('ai-btn-surface');
+    // const aiText = chatToggle.querySelector('span.font-display'); // DOM Element Removed in Orb Design
+
+    let isOpen = false;
+    let isLoading = false;
+    let loadingInterval;
+
+    // Globals for suggestion clicks and external triggers
+    window.sendSuggestion = function(text) {
+      sendMessage(text);
+    };
+    
+    // Global function to open AI chat from anywhere (e.g., EventPopup)
+    window.openAIChat = function() {
+      if (!isOpen) {
+        toggleChat();
+      }
+    };
+
+    function toggleChat() {
+      // Safety check for critical elements
+      if (!chatPanel || !chatToggle) {
+          console.error('CRITICAL: Chat DOM elements missing.');
+          return;
+      }
+
+      isOpen = !isOpen;
+      if (isOpen) {
+        chatPanel.classList.remove('hidden');
+        // Force Reflow
+        void chatPanel.offsetWidth; 
+        
+        // Remove Exit State
+        chatPanel.classList.remove('opacity-0', 'scale-95', 'translate-y-4');
+        
+        // Add Enter State
+        chatPanel.classList.add('opacity-100', 'scale-100', 'translate-y-0');
+
+        
+        // Button Morph
+        if (chatBtnIcon) chatBtnIcon.classList.add('opacity-0', 'scale-0');
+        if (closeBtnIcon) {
+             closeBtnIcon.classList.remove('opacity-0', 'rotate-90');
+             closeBtnIcon.classList.add('opacity-100', 'rotate-0');
+        }
+        
+        // Force Button State to "Active" styling
+        if (chatButtonContainer) {
+            chatButtonContainer.classList.add('bg-white', 'text-black', 'shadow-[0_0_50px_white]');
+            chatButtonContainer.classList.remove('bg-signal', 'text-black', 'shadow-[0_0_50px_var(--signal)]');
+        }
+
+        if (chatInput) chatInput.focus();
+      } else {
+        // Exit State
+        chatPanel.classList.remove('opacity-100', 'scale-100', 'translate-y-0');
+        chatPanel.classList.add('opacity-0', 'scale-95', 'translate-y-4');
+        
+        setTimeout(() => {
+            if(!isOpen) chatPanel.classList.add('hidden');
+        }, 300);
+        
+        // Button Morph Back
+        if (chatBtnIcon) chatBtnIcon.classList.remove('opacity-0', 'scale-0');
+        
+        if (closeBtnIcon) {
+            closeBtnIcon.classList.remove('opacity-100', 'rotate-0');
+            closeBtnIcon.classList.add('opacity-0', 'rotate-90');
+        }
+
+        // Force Button State Back
+        if (chatButtonContainer) {
+            chatButtonContainer.classList.remove('bg-white', 'text-black', 'shadow-[0_0_50px_white]');
+            chatButtonContainer.classList.add('bg-signal', 'text-black', 'shadow-[0_0_50px_var(--signal)]');
+        }
+      }
+    }
+
+    // --- CINEMATIC DECODING EFFECT ---
+    // Replaces standard typewriter with a matrix-style decryption animation
+    function typeWriter(element, text, speed = 3) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
+      const tokens = text.match(/<[^>]+>|&[^;]+;|[^<]/g) || [];
+      
+      let finalHTML = "";
+      let i = 0;
+      let batchSize = 1; // Accelerates over time
+      
+      const decodeSpan = document.createElement('span');
+      decodeSpan.className = "text-signal font-mono bg-signal/20 select-none";
+      element.appendChild(decodeSpan);
+
+      function type() {
+        if (i >= tokens.length) {
+           decodeSpan.remove();
+           chatMessages.scrollTop = chatMessages.scrollHeight;
+           return;
+        }
+        
+        // Process multiple tokens per frame for speed
+        let processed = 0;
+        while (i < tokens.length && processed < batchSize) {
+          const token = tokens[i];
+          const isTag = token.startsWith('<') || token.startsWith('&');
+          finalHTML += token;
+          i++;
+          if (!isTag) processed++;
+        }
+        
+        // Quick scramble flash on the decode cursor
+        decodeSpan.innerText = chars[Math.floor(Math.random() * chars.length)];
+        element.innerHTML = finalHTML;
+        element.appendChild(decodeSpan);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Accelerate: start slow (1 char), ramp up to 4 chars per tick
+        if (i > tokens.length * 0.3) batchSize = 2;
+        if (i > tokens.length * 0.6) batchSize = 3;
+        if (i > tokens.length * 0.8) batchSize = 4;
+        
+        setTimeout(type, speed);
+      }
+      
+      // Initial scramble flash then start
+      decodeSpan.innerText = chars[Math.floor(Math.random() * chars.length)];
+      setTimeout(type, 50);
+    }
+
+    function addMessage(content, isUser = false, isError = false) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-300 relative z-10';
+
+      const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+      if (isUser) {
+        msgDiv.innerHTML = `
+           <div class="flex items-center justify-end gap-2 mb-1 opacity-50">
+             <span class="text-[9px] uppercase tracking-widest text-white font-mono">YOU</span>
+             <div class="w-1 h-1 bg-white rounded-full"></div>
+          </div>
+          <div class="self-end max-w-[90%] overflow-hidden bg-zinc-800 border border-zinc-700 p-3 clip-corner-tr backdrop-blur-sm">
+            <p class="text-[13px] text-white leading-relaxed font-sans break-words">${escapeHtml(content)}</p>
+          </div>
+        `;
+        chatMessages.appendChild(msgDiv);
+      } else {
+         const formattedContent = formatResponse(content);
+         
+         // Create container structure but leave text content empty for typing
+        msgDiv.innerHTML = `
+           <div class="flex items-center gap-2 mb-1 opacity-50">
+             <div class="w-1 h-1 bg-signal rounded-full shadow-[0_0_4px_var(--signal)]"></div>
+             <span class="text-[9px] uppercase tracking-widest text-signal font-mono">DevUp AI</span>
+             <span class="text-[9px] font-mono text-zinc-500">${timestamp}</span>
+          </div>
+          <div class="self-start max-w-[90%] overflow-hidden ${isError ? 'bg-red-950/40 border border-red-500/50' : 'bg-zinc-900 border border-zinc-800'} p-4 clip-corner-tl backdrop-blur-sm">
+            <p class="text-[13px] ${isError ? 'text-red-300' : 'text-zinc-200'} leading-relaxed font-sans break-words [overflow-wrap:anywhere]" id="typing-${Date.now()}"></p>
+          </div>
+        `;
+        
+        chatMessages.appendChild(msgDiv);
+        
+        // Start Typewriter effect for AI
+        const typeTarget = msgDiv.querySelector('p');
+        if(!isError) {
+            typeWriter(typeTarget, formattedContent);
+        } else {
+            typeTarget.innerHTML = formattedContent; 
+        }
+      }
+
+      // Smooth Scroll
+      requestAnimationFrame(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+
+    function addLoading() {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'ai-loading';
+      loadingDiv.className = 'flex flex-col animate-in fade-in duration-300 relative z-10 pl-2';
+      loadingDiv.innerHTML = `
+          <div class="flex items-center gap-2 mb-1 opacity-50">
+             <div class="w-1 h-1 bg-signal rounded-full shadow-[0_0_4px_var(--signal)]"></div>
+             <span class="text-[9px] uppercase tracking-widest text-signal font-mono">NEURAL NET</span>
+          </div>
+          <div class="self-start bg-zinc-900 border border-zinc-800 p-3 clip-corner-tl flex items-center gap-3 backdrop-blur-sm">
+             <!-- Wave Animation -->
+             <div class="flex items-center gap-0.5 h-3">
+                <span class="w-0.5 h-3 bg-signal shadow-[0_0_4px_var(--signal)] animate-[wave_1s_ease-in-out_infinite]"></span>
+                <span class="w-0.5 h-3 bg-signal shadow-[0_0_4px_var(--signal)] animate-[wave_1s_ease-in-out_infinite_0.1s]"></span>
+                <span class="w-0.5 h-3 bg-signal shadow-[0_0_4px_var(--signal)] animate-[wave_1s_ease-in-out_infinite_0.2s]"></span>
+                <span class="w-0.5 h-3 bg-signal shadow-[0_0_4px_var(--signal)] animate-[wave_1s_ease-in-out_infinite_0.3s]"></span>
+                <span class="w-0.5 h-3 bg-signal shadow-[0_0_4px_var(--signal)] animate-[wave_1s_ease-in-out_infinite_0.4s]"></span>
+             </div>
+             <!-- Cycling Text -->
+             <span class="text-[10px] text-zinc-400 font-mono tracking-widest tabular-nums w-[80px]" id="loading-text">THINKING</span>
+          </div>
+      `;
+      chatMessages.appendChild(loadingDiv);
+      requestAnimationFrame(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+
+      // Status Cycling
+      const states = [
+        "THINKING",
+        "ANALYZING",
+        "SEARCHING",
+        "COMPUTING",
+        "GENERATING",
+      ];
+      let stateIdx = 0;
+      
+      if (loadingInterval) clearInterval(loadingInterval);
+      
+      loadingInterval = setInterval(() => {
+        stateIdx = (stateIdx + 1) % states.length;
+        const textEl = document.getElementById('loading-text');
+        if(textEl) {
+           textEl.innerText = states[stateIdx];
+        }
+      }, 600);
+    }
+
+    function removeLoading() {
+      if (loadingInterval) clearInterval(loadingInterval);
+      const loading = document.getElementById('ai-loading');
+      if (loading) loading.remove();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatResponse(text) {
+      return escapeHtml(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="text-signal/80 not-italic">$1</em>')
+        .replace(/`([^`]+)`/g, '<code class="bg-black/50 px-1 py-0.5 rounded text-signal font-mono text-xs">$1</code>')
+        .replace(/\n/g, '<br>');
+    }
+
+    async function sendMessage(message, retryCount = 0) {
+      if (isLoading || !message.trim()) return;
+
+      isLoading = true;
+      sendBtn.disabled = true;
+      chatInput.disabled = true;
+      
+      // Hide suggestions if visible
+      const suggestions = document.getElementById('ai-suggestions');
+      if(suggestions) suggestions.style.display = 'none';
+
+      addMessage(message, true);
+      addLoading();
+
+      try {
+        const response = await fetch('/api/assistant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: message.trim() }),
+          // Disable cache to prevent stale responses
+          cache: 'no-store'
+        });
+
+        removeLoading();
+
+        if (!response.ok) {
+          // Specific error for 500 (likely API key not configured)
+          if (response.status === 500) {
+            throw new Error('AI_NOT_CONFIGURED');
+          }
+          throw new Error('HTTP ' + response.status);
+        }
+
+        const data = await response.json();
+
+        if (data.answer) {
+          addMessage(data.answer, false, !data.success);
+        } else {
+          addMessage('SYSTEM ERROR: Unable to process request.', false, true);
+        }
+      } catch (error) {
+        removeLoading();
+        console.error('AI Chat Error:', error);
+        
+        // Retry logic for transient failures (max 2 retries)
+        if (retryCount < 2 && !(error instanceof Error && error.message === 'AI_NOT_CONFIGURED')) {
+          console.log(`Retrying... Attempt ${retryCount + 1}/2`);
+          // Wait 1 second before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return sendMessage(message, retryCount + 1);
+        }
+        
+        // Friendly error messages
+        if (error instanceof Error && error.message === 'AI_NOT_CONFIGURED') {
+          addMessage('⚠️ API Error: AI Assistant needs setup. Please redeploy on Vercel without build cache.', false, true);
+        } else if (error instanceof Error && error.message.includes('HTTP 429')) {
+          addMessage('⏱️ Rate limit reached. please wait a moment before trying again.', false, true);
+        } else if (error instanceof Error && error.name === 'TypeError' && error.message.toLowerCase().includes('fetch')) {
+          addMessage('🌐 NETWORK ERROR: Unable to reach the server. Please check your internet connection and try again.', false, true);
+        } else {
+          addMessage('⚠️ SYSTEM ERROR: Connection failed after retries. Verify your connection or try again later. (' + error.message + ')', false, true);
+        }
+      } finally {
+        isLoading = false;
+        sendBtn.disabled = false;
+        chatInput.disabled = false;
+        chatInput.value = '';
+        chatInput.focus();
+      }
+    }
+
+    // Event Listeners (Robust)
+    if (chatToggle) {
+        chatToggle.style.pointerEvents = 'auto';
+        chatToggle.onclick = (e) => {
+            e.preventDefault();
+            toggleChat();
+        };
+    } else {
+        // Fallback: Try finding it again if variable capture failed
+        const freshToggle = document.getElementById('ai-chat-toggle');
+        if (freshToggle) {
+            freshToggle.onclick = (e) => {
+                 e.preventDefault();
+                 toggleChat();
+            };
+        }
+    }
+
+    if (chatClose) {
+         chatClose.onclick = toggleChat;
+    }
+
+    chatForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const message = chatInput.value.trim();
+      if (message) {
+        sendMessage(message);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        toggleChat();
+      }
+    });
+    
+    // Command Mode Detection
+    chatInput?.addEventListener('input', (e) => {
+       const val = e.target.value;
+       const inputContainer = document.getElementById('chat-input-container');
+       const cmdBg = document.getElementById('cmd-mode-bg');
+       
+       if (val.startsWith('/')) {
+         inputContainer.style.borderColor = 'rgba(239, 68, 68, 0.3)'; // Red alert color
+         cmdBg.style.opacity = '1';
+         e.target.style.color = '#fca5a5';
+       } else {
+         inputContainer.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+         cmdBg.style.opacity = '0';
+         e.target.style.color = 'white';
+       }
+    });
+
+    chatPanel?.addEventListener('click', (e) => e.stopPropagation());
+  })();
+  </script>
+
+  <!-- DEVSOC TERMINAL OVERLAY -->
+  <div id="dev-terminal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl hidden flex items-center justify-center pt-20 pb-20 px-4 opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-2xl bg-[#0a0a0a] border border-zinc-800 rounded-lg overflow-hidden shadow-2xl shadow-signal/5 transform scale-95 transition-transform duration-300" id="terminal-window">
+      <!-- Terminal Header -->
+      <div class="h-8 bg-zinc-900/50 border-b border-zinc-800 flex items-center justify-between px-4">
+        <div class="flex items-center gap-2">
+           <div class="w-3 h-3 rounded-full bg-red-500/50 hover:bg-red-500 transition-colors cursor-pointer" id="term-close-dot"></div>
+           <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+           <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+        </div>
+        <div class="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">DevUp System Console</div>
+        <div class="w-10"></div> <!-- Spacer -->
+      </div>
+      
+      <!-- Terminal Body -->
+      <div class="p-6 h-[400px] overflow-y-auto font-mono text-xs md:text-sm text-zinc-300 scrollbar-hide" id="terminal-output" onclick="document.getElementById('terminal-input').focus()">
+        <div class="mb-4 text-zinc-500">
+           DevUp OS [Version 1.0.0]<br>
+           (c) 2026 DevUp Society Corporation. All rights reserved.<br>
+           <br>
+           Welcome to the DevUp Console. Type <span class="text-signal">'help'</span> for a list of commands.
+        </div>
+        <div class="flex flex-col gap-1" id="history"></div>
+        
+        <div class="flex items-center gap-2 text-signal mt-2 border-t border-dashed border-zinc-800 pt-2">
+           <span class="hidden md:inline">root@devup:~#</span>
+           <span class="md:hidden">></span>
+           <input type="text" id="terminal-input" class="bg-transparent border-none outline-none flex-1 text-white caret-signal uppercase font-mono" autocomplete="off" spellcheck="false" placeholder="ENTER COMMAND...">
+           <button id="terminal-submit" class="px-2 text-signal hover:text-white transition-colors" aria-label="Execute Command">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    // --- SEARCH/TERMINAL LOGIC ---
+    const terminalOverlay = document.getElementById('dev-terminal');
+    const terminalWindow = document.getElementById('terminal-window');
+    const terminalInput = document.getElementById('terminal-input');
+    const terminalOutput = document.getElementById('history');
+    const termBtn = document.getElementById('terminal-btn');
+    const mobileTermBtn = document.getElementById('mobile-terminal-btn');
+    const termCloseDot = document.getElementById('term-close-dot');
+
+    let isTermOpen = false;
+
+    function openTerminal() {
+        if(document.getElementById('mobile-menu')) {
+            closeMobileMenu(); // Close mobile menu if open
+        }
+        terminalOverlay.classList.remove('hidden');
+        // Small delay for transition
+        setTimeout(() => {
+            terminalOverlay.classList.remove('opacity-0');
+            terminalWindow.classList.remove('scale-95');
+            terminalOverlay.classList.add('opacity-100');
+            terminalWindow.classList.add('scale-100');
+            terminalInput.focus();
+        }, 10);
+        isTermOpen = true;
+    }
+
+    function closeTerminal() {
+        terminalOverlay.classList.remove('opacity-100');
+        terminalWindow.classList.remove('scale-100');
+        terminalOverlay.classList.add('opacity-0');
+        terminalWindow.classList.add('scale-95');
+        setTimeout(() => {
+            terminalOverlay.classList.add('hidden');
+        }, 300);
+        isTermOpen = false;
+    }
+
+    // Toggle on button click
+    if(termBtn) {
+        termBtn.addEventListener('click', openTerminal);
+    }
+    if(mobileTermBtn) {
+        mobileTermBtn.addEventListener('click', openTerminal);
+    }
+    if(termCloseDot) {
+        termCloseDot.addEventListener('click', closeTerminal);
+    }
+
+    // Toggle on Ctrl+K or Cmd+K
+    document.addEventListener('keydown', (e) => {
+        if((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            if(isTermOpen) closeTerminal();
+            else openTerminal();
+        }
+        if(e.key === 'Escape' && isTermOpen) {
+            closeTerminal();
+        }
+    });
+
+    // Close on click outside
+    terminalOverlay.addEventListener('click', (e) => {
+        if(e.target === terminalOverlay) closeTerminal();
+    });
+
+    // Command Logic
+    const termSubmitBtn = document.getElementById('terminal-submit');
+
+    function executeCommand() {
+        const command = terminalInput.value.trim(); // Don't allow empty commands to clutter, let processCommand handle casing
+        if(command) {
+            processCommand(command.toLowerCase());
+            terminalInput.value = '';
+            // On desktop keep focus, on mobile maybe not to allow reading output?
+            // Let's keep focus for now to allow rapid commands.
+             setTimeout(() => {
+                const container = document.getElementById('terminal-output');
+                container.scrollTop = container.scrollHeight;
+            }, 10);
+        }
+    }
+
+    terminalInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') {
+            e.preventDefault();
+            executeCommand();
+        }
+    });
+
+    if(termSubmitBtn) {
+        termSubmitBtn.addEventListener('click', executeCommand);
+    }
+
+    function addToHistory(cmd, output, isHtml = false) {
+        const cmdLine = document.createElement('div');
+        cmdLine.className = "flex gap-2 text-zinc-400";
+        cmdLine.innerHTML = `<span class="text-signal">root@devup:~#</span> ${cmd}`;
+        terminalOutput.appendChild(cmdLine);
+
+        if(output) {
+            const outputLine = document.createElement('div');
+            outputLine.className = "mb-4 text-white pl-4 border-l-2 border-zinc-800 ml-1";
+            if(isHtml) outputLine.innerHTML = output;
+            else outputLine.innerText = output;
+            terminalOutput.appendChild(outputLine);
+        }
+        
+        // Auto scroll
+        const container = document.getElementById('terminal-output');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function processCommand(cmd) {
+        // Normalize command
+        const cleanCmd = cmd.toLowerCase().trim();
+
+        if (cleanCmd.includes('devup') || cleanCmd === 'who are you' || cleanCmd === 'about') {
+             addToHistory(cmd, `
+<div class="font-mono border border-zinc-800 p-4 bg-zinc-900/50 rounded mb-2">
+  <div class="text-signal font-bold text-base mb-2">/// DEVUP SOCIETY INTELLIGENCE</div>
+  <p class="text-zinc-300 mb-2">We are the premier tech community for students, builders, and innovators.</p>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+    <div>
+      <span class="text-zinc-500 block">MISSION</span>
+      <span class="text-white">To maintain a global standard of excellence in skills, innovation, and impact.</span>
+    </div>
+    <div>
+      <span class="text-zinc-500 block">STANDARD</span>
+      <span class="text-white">Apple-level polish. Stripe-level clarity.</span>
+    </div>
+  </div>
+  <div class="mt-4 pt-4 border-t border-zinc-800">
+    <span class="text-signal">> STATUS:</span> <span class="text-white">OPERATIONAL</span><br>
+    <span class="text-signal">> NEXT EVENT:</span> <a href="/events" class="underline hover:text-white decoration-zinc-600">CHECK CALENDAR</a>
+  </div>
+</div>`, true);
+             return;
+        }
+
+        switch(cleanCmd) {
+            case 'help':
+                addToHistory(cmd, `AVAILABLE COMMANDS:
+  help        - Show this menu
+  devup       - System Info / Mission
+  clear       - Clear terminal
+  home        - Go to Homepage
+  events      - Navigate to Events
+  team        - Meet the Team
+  join        - Join Community
+  socials     - List Social Links
+  hack        - [EXPERIMENTAL]
+  exit        - Close Console`, false);
+                break;
+            case 'exit':
+                closeTerminal();
+                break;
+            case 'sudo':
+                addToHistory(cmd, 'PERMISSION DENIED. YOU ARE NOT ADMIN.', false);
+                break;
+            case 'clear':
+                terminalOutput.innerHTML = '';
+                break;
+            case 'home':
+                addToHistory(cmd, 'Navigating to HOME...');
+                setTimeout(() => window.location.href = '/', 500);
+                break;
+            case 'events':
+                addToHistory(cmd, 'Navigating to EVENTS...');
+                setTimeout(() => window.location.href = '/events', 500);
+                break;
+            case 'team':
+                addToHistory(cmd, 'Navigating to TEAM...');
+                setTimeout(() => window.location.href = '/team', 500);
+                break;
+             case 'join':
+                addToHistory(cmd, 'Initiating Join Protocol...');
+                setTimeout(() => window.location.href = '/join', 500);
+                break;
+            case 'date':
+                addToHistory(cmd, new Date().toString());
+                break;
+            case 'socials':
+                addToHistory(cmd, `
+<a href="https://github.com/DevUp-Society" target="_blank" class="text-blue-400 hover:text-signal hover:underline">GITHUB</a>
+<br><a href="https://www.linkedin.com/company/devup-community" target="_blank" class="text-blue-400 hover:text-signal hover:underline">LINKEDIN</a>
+<br><a href="https://www.instagram.com/devupcommunity/" target="_blank" class="text-blue-400 hover:text-signal hover:underline">INSTAGRAM</a>`, true);
+                break;
+            case 'hack':
+                const hackSteps = [
+                    "INITIATING BREACH PROTOCOL...",
+                    "BYPASSING FIREWALL (PORT 443)...",
+                    "INJECTING SQL PAYLOAD...",
+                    "ACCESSING MAINFRAME... [SUCCESS]",
+                    "DOWNLOADING 'SECRET_PLANS.PDF'...",
+                    "DECRYPTING PASSWORDS...",
+                    "...WAIT...",
+                    "⚠️ SECURITY ALERT TRIGGERED ⚠️",
+                    "TRACING IP ADDRESS...",
+                    "CONNECTION TERMINATED."
+                ];
+                
+                let step = 0;
+                addToHistory(cmd, hackSteps[0], false);
+                
+                const hackInterval = setInterval(() => {
+                    step++;
+                    if(step < hackSteps.length) {
+                         const line = document.createElement('div');
+                         line.className = "mb-1 text-zinc-300 pl-4 border-l-2 border-zinc-800 ml-1 font-mono text-xs";
+                         line.innerText = hackSteps[step];
+                         
+                         if(hackSteps[step].includes("ALERT") || hackSteps[step].includes("TERMINATED")) {
+                             line.classList.add("text-red-500", "font-bold");
+                         }
+                         if(hackSteps[step].includes("SUCCESS")) {
+                             line.classList.add("text-signal");
+                         }
+                         
+                         terminalOutput.appendChild(line);
+                         
+                         // Auto scroll
+                         const container = document.getElementById('terminal-output');
+                         container.scrollTop = container.scrollHeight;
+                         
+                         // Random glitch effect
+                         if(Math.random() > 0.5) {
+                             document.body.classList.add('invert'); 
+                             setTimeout(() => document.body.classList.remove('invert'), 100);
+                         }
+                    } else {
+                        clearInterval(hackInterval);
+                    }
+                }, 800);
+                break;
+            case '':
+                addToHistory('', '', false);
+                break;
+            default:
+                addToHistory(cmd, `Command not found: ${cmd}. Type 'help' for valid commands.`);
+        }
+    }
+
+    // @ts-nocheck - GSAP loaded from CDN, types not available at build time
+    
+    // --- LOADER LOGIC ---
+    const loader = document.getElementById('loader');
+    const loaderText = document.getElementById('loader-text');
+    const loaderBar = document.getElementById('loader-bar');
+    const loaderStatus = document.getElementById('loader-status');
+    const loaderSystem = document.getElementById('loader-system');
+    const bootLog = document.getElementById('boot-log');
+    
+    // Tech-jargon for the status text
+    const statusMessages = [
+      "INITIALIZING KERNEL...",
+      "LOADING ASSETS...",
+      "ESTABLISHING UPLINK...",
+      "DECRYPTING PROTOCOLS...",
+      "SYNCING DATA STREAMS...",
+      "SYSTEM OPTIMIZED"
+    ];
+
+    // Tech-jargon for background log
+    const logLines = [
+        "Allocating memory block 0x000F4A...",
+        "Loading kernel modules [OK]",
+        "Mounting ZFS filesystem...",
+        "Checking dependencies: node_modules [OK]",
+        "Starting network interface wlan0...",
+        "Bypassing firewall proxy 127.0.0.1...",
+        "Injecting CSS variables...",
+        "Compiling Astro islands...",
+        "Handshaking with satellite VJIT-SAT-1...",
+        "Decrypting user token sha256...",
+        "Optimizing rendering engine...",
+        "Flush DNS cache...",
+        "Establishing secure connection TLS 1.3...",
+        "Loading textures: noise.png...",
+        "Loading fonts: Space Grotesk...",
+        "Initializing WebGL context...",
+        "VRAM Integrity Check: PASSED",
+        "Cyber-Security Protocols: ACTIVE"
+    ];
+
+    const isHomePage = window.location.pathname === '/';
+    
+    if (!isHomePage) {
+      loader.style.display = 'none';
+      document.body.classList.remove('loading');
+    } else {
+      let progress = 0;
+      let statusIndex = 0;
+      
+      const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 8) + 2; 
+        if(progress > 100) progress = 100;
+        
+        loaderText.innerText = progress < 100 ? `0${progress}` : '100';
+        loaderBar.style.width = `${progress}%`;
+        
+        // Update Status
+        if (progress % 20 === 0 && statusIndex < statusMessages.length) {
+             loaderStatus.innerText = statusMessages[statusIndex];
+             statusIndex++;
+        }
+
+        // Add Matrix/Boot Log lines randomly
+        if(Math.random() > 0.3) {
+            const line = document.createElement('div');
+            line.innerText = `> ${logLines[Math.floor(Math.random() * logLines.length)]}`;
+            // Random opacity for depth
+            line.style.opacity = (Math.random() * 0.7 + 0.3).toFixed(1); 
+            bootLog.appendChild(line);
+            // Keep DOM light
+            if(bootLog.childElementCount > 12) bootLog.removeChild(bootLog.firstChild);
+        }
+        
+        if(progress === 100) {
+          clearInterval(interval);
+          loaderStatus.innerText = "ACCESS GRANTED";
+          loaderSystem.innerText = "ONLINE";
+          loaderSystem.classList.add('animate-pulse');
+          loaderText.style.color = '#CCFF00';
+          loaderBar.parentElement.style.boxShadow = "0 0 20px #CCFF00";
+          
+          setTimeout(() => {
+            // Slide up
+            loader.style.transform = 'translateY(-100%)';
+            document.body.classList.remove('loading');
+            
+            // Clear log to save memory
+            setTimeout(() => { 
+                bootLog.innerHTML = ''; 
+                loader.style.display = 'none';
+            }, 1000);
+          }, 400); // 400ms pause at 100%
+        }
+      }, 30);
+    }
+
+    // --- CURSOR LOGIC (OPTIMIZED) ---
+    const cursorDot = document.querySelector('.cursor-dot');
+    const cursorRing = document.querySelector('.cursor-ring');
+
+    if (window.matchMedia("(pointer: fine)").matches && cursorDot && cursorRing) {
+      let mouseX = 0, mouseY = 0;
+      let ringX = 0, ringY = 0;
+      let isAnimating = false;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursorDot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+        
+        // Start ring animation if not already running
+        if (!isAnimating) {
+          isAnimating = true;
+          animateRing();
+        }
+      });
+
+      const animateRing = () => {
+        const deltaX = Math.abs(mouseX - ringX);
+        const deltaY = Math.abs(mouseY - ringY);
+        
+        // Stop animation when cursor is stable (performance boost)
+        if (deltaX < 0.5 && deltaY < 0.5) {
+          isAnimating = false;
+          return;
+        }
+        
+        ringX += (mouseX - ringX) * 0.3;
+        ringY += (mouseY - ringY) * 0.3;
+        cursorRing.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+        requestAnimationFrame(animateRing);
+      }
+
+      // Interactive Elements
+      document.querySelectorAll('a, button, .spotlight-card').forEach((el) => {
+        el.addEventListener('mouseenter', () => {
+          cursorRing.style.width = '50px';
+          cursorRing.style.height = '50px';
+          cursorRing.style.backgroundColor = 'rgba(204, 255, 0, 0.1)';
+          cursorRing.style.borderColor = 'transparent';
+        });
+        el.addEventListener('mouseleave', () => {
+          cursorRing.style.width = '20px';
+          cursorRing.style.height = '20px';
+          cursorRing.style.backgroundColor = 'transparent';
+          cursorRing.style.borderColor = 'rgba(204, 255, 0, 0.5)';
+        });
+      });
+    }
+
+    // --- SPOTLIGHT EFFECT (THROTTLED) ---
+    const cards = document.querySelectorAll('.spotlight-card');
+    let lastSpotlightUpdate = 0;
+    const throttleDelay = 16; // ~60fps, down from every pixel
+
+    window.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      if (now - lastSpotlightUpdate < throttleDelay) return;
+      lastSpotlightUpdate = now;
+      
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty("--mouse-x", `${x}px`);
+        card.style.setProperty("--mouse-y", `${y}px`);
+      });
+    });
+
+    // --- GSAP ANIMATIONS (OPTIMIZED) ---
+    // Wait for GSAP to load from CDN
+    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Reduced animations - only h2 titles for performance
+      gsap.utils.toArray('section').forEach((section) => {
+        gsap.from(section.querySelectorAll('h2'), {
+          scrollTrigger: {
+            trigger: section,
+            start: "top 80%",
+            toggleActions: "play none none reverse"
+          },
+          y: 20,
+          opacity: 0,
+          duration: 0.6,
+          ease: "power2.out"
+        });
+      });
+    }
+  </script>
+</body>
+</html>

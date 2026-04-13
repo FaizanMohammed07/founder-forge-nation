@@ -145,6 +145,14 @@ const Footer = () => (
                 Partner with us
               </a>
             </li>
+            <li>
+              <Link
+                to="/events/founders-meet-2026/register"
+                className="hover:text-white transition-colors"
+              >
+                Register
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
