@@ -15,8 +15,9 @@ const steps = [
     icon: GraduationCap,
     label: "Student",
     tagline: "Ideation Phase",
-    description: "Transform raw ideas into validated concepts through intensive research and market analysis.",
-    metrics: "0-3 Months",
+    description:
+      "Transform raw ideas into validated concepts through intensive research and market analysis.",
+    metrics: "0-3 Days",
     color: "from-purple-500 to-indigo-600",
     bgGlow: "bg-purple-500/20",
   },
@@ -24,8 +25,9 @@ const steps = [
     icon: Beaker,
     label: "Pre-Incubation",
     tagline: "Validation Sprint",
-    description: "Rigorous hypothesis testing, customer discovery, and problem-solution fit validation.",
-    metrics: "3-6 Months",
+    description:
+      "Rigorous hypothesis testing, customer discovery, and problem-solution fit validation.",
+    metrics: "3-6 Days",
     color: "from-blue-500 to-cyan-600",
     bgGlow: "bg-blue-500/20",
   },
@@ -33,8 +35,9 @@ const steps = [
     icon: Building,
     label: "Incubation",
     tagline: "MVP Development",
-    description: "Build your minimum viable product, achieve product-market fit, and secure early users.",
-    metrics: "6-12 Months",
+    description:
+      "Build your minimum viable product, achieve product-market fit, and secure early users.",
+    metrics: "6-12 Days",
     color: "from-cyan-500 to-teal-600",
     bgGlow: "bg-cyan-500/20",
   },
@@ -42,8 +45,9 @@ const steps = [
     icon: Rocket,
     label: "Accelerator",
     tagline: "Growth Engine",
-    description: "High-velocity scaling, user acquisition optimization, and metrics-driven expansion.",
-    metrics: "12-18 Months",
+    description:
+      "High-velocity scaling, user acquisition optimization, and metrics-driven expansion.",
+    metrics: "12-18 Days",
     color: "from-orange-500 to-red-600",
     bgGlow: "bg-orange-500/20",
   },
@@ -51,8 +55,9 @@ const steps = [
     icon: Banknote,
     label: "Funding",
     tagline: "Capital Raise",
-    description: "Pitch to investors, negotiate term sheets, and secure venture capital for exponential growth.",
-    metrics: "18-24 Months",
+    description:
+      "Pitch to investors, negotiate term sheets, and secure venture capital for exponential growth.",
+    metrics: "18-24 Days",
     color: "from-green-500 to-emerald-600",
     bgGlow: "bg-green-500/20",
   },
@@ -60,8 +65,9 @@ const steps = [
     icon: TrendingUp,
     label: "Startup Growth",
     tagline: "Scale & Dominate",
-    description: "Market leadership, team expansion, enterprise partnerships, and sustainable profitability.",
-    metrics: "24+ Months",
+    description:
+      "Market leadership, team expansion, enterprise partnerships, and sustainable profitability.",
+    metrics: "24+ Days",
     color: "from-rose-500 to-pink-600",
     bgGlow: "bg-rose-500/20",
   },
@@ -95,8 +101,11 @@ const EcosystemSection = () => {
             </span>
           </h2>
           <p className="text-lg md:text-xl text-gray-600 font-light max-w-3xl mx-auto leading-relaxed">
-            A comprehensive, battle-tested framework designed to transform ambitious students into{" "}
-            <span className="font-semibold text-[#E50914]">venture-backed founders</span>
+            A comprehensive, battle-tested framework designed to transform
+            ambitious students into{" "}
+            <span className="font-semibold text-[#E50914]">
+              venture-backed founders
+            </span>
           </p>
         </div>
 
@@ -104,12 +113,15 @@ const EcosystemSection = () => {
         <div className="hidden lg:block relative max-w-[1400px] mx-auto mb-24">
           {/* Connection Line */}
           <div className="absolute top-[100px] left-[8%] right-[8%] h-1 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-full" />
-          
+
           {/* Active Progress Line */}
-          <div 
+          <div
             className="absolute top-[100px] left-[8%] h-1 bg-gradient-to-r from-[#E50914] via-purple-500 to-blue-500 rounded-full transition-all duration-700 ease-out shadow-[0_0_20px_rgba(229,9,20,0.6)]"
-            style={{ 
-              width: selectedIndex !== null ? `${(selectedIndex / (steps.length - 1)) * 84}%` : '0%',
+            style={{
+              width:
+                selectedIndex !== null
+                  ? `${(selectedIndex / (steps.length - 1)) * 84}%`
+                  : "0%",
             }}
           >
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-4 border-[#E50914] shadow-[0_0_20px_rgba(229,9,20,0.8)] animate-pulse" />
@@ -144,38 +156,52 @@ const EcosystemSection = () => {
                   >
                     {/* Glow Effect */}
                     {isActive && (
-                      <div className={`absolute inset-0 ${step.bgGlow} blur-2xl rounded-2xl -z-10 animate-pulse`} />
+                      <div
+                        className={`absolute inset-0 ${step.bgGlow} blur-2xl rounded-2xl -z-10 animate-pulse`}
+                      />
                     )}
 
                     {/* Icon */}
-                    <div className={`mb-4 transition-all duration-500 ${isActive ? "text-white" : "text-gray-700"}`}>
+                    <div
+                      className={`mb-4 transition-all duration-500 ${isActive ? "text-white" : "text-gray-700"}`}
+                    >
                       <step.icon className="w-12 h-12" strokeWidth={1.5} />
                     </div>
 
                     {/* Stage Number */}
-                    <div className={`text-[10px] font-black tracking-[0.2em] uppercase mb-2 ${isActive ? "text-white/80" : "text-gray-400"}`}>
+                    <div
+                      className={`text-[10px] font-black tracking-[0.2em] uppercase mb-2 ${isActive ? "text-white/80" : "text-gray-400"}`}
+                    >
                       Stage {String(i + 1).padStart(2, "0")}
                     </div>
 
                     {/* Label */}
-                    <h3 className={`font-black text-lg text-center mb-1 ${isActive ? "text-white" : "text-gray-900"}`}>
+                    <h3
+                      className={`font-black text-lg text-center mb-1 ${isActive ? "text-white" : "text-gray-900"}`}
+                    >
                       {step.label}
                     </h3>
 
                     {/* Tagline */}
-                    <p className={`text-xs font-medium text-center ${isActive ? "text-white/90" : "text-gray-500"}`}>
+                    <p
+                      className={`text-xs font-medium text-center ${isActive ? "text-white/90" : "text-gray-500"}`}
+                    >
                       {step.tagline}
                     </p>
 
                     {/* Metrics Badge */}
-                    <div className={`mt-4 px-3 py-1 rounded-full text-[10px] font-bold ${isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}>
+                    <div
+                      className={`mt-4 px-3 py-1 rounded-full text-[10px] font-bold ${isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}
+                    >
                       {step.metrics}
                     </div>
 
                     {/* Expand Indicator */}
                     {(isHovered || isSelected) && (
                       <div className="absolute bottom-3 right-3">
-                        <ChevronRight className={`w-5 h-5 ${isActive ? "text-white" : "text-[#E50914]"} animate-bounce`} />
+                        <ChevronRight
+                          className={`w-5 h-5 ${isActive ? "text-white" : "text-[#E50914]"} animate-bounce`}
+                        />
                       </div>
                     )}
                   </div>
@@ -204,30 +230,47 @@ const EcosystemSection = () => {
                   }`}
                 >
                   {isSelected && (
-                    <div className={`absolute inset-0 ${step.bgGlow} blur-2xl rounded-2xl -z-10 animate-pulse`} />
+                    <div
+                      className={`absolute inset-0 ${step.bgGlow} blur-2xl rounded-2xl -z-10 animate-pulse`}
+                    />
                   )}
 
                   <div className="flex items-start gap-4">
-                    <div className={`shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${isSelected ? "bg-white/20" : "bg-gray-100"}`}>
-                      <step.icon className={`w-8 h-8 ${isSelected ? "text-white" : "text-gray-700"}`} strokeWidth={1.5} />
+                    <div
+                      className={`shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${isSelected ? "bg-white/20" : "bg-gray-100"}`}
+                    >
+                      <step.icon
+                        className={`w-8 h-8 ${isSelected ? "text-white" : "text-gray-700"}`}
+                        strokeWidth={1.5}
+                      />
                     </div>
 
                     <div className="flex-1">
-                      <div className={`text-[10px] font-black tracking-[0.2em] uppercase mb-1 ${isSelected ? "text-white/80" : "text-gray-400"}`}>
+                      <div
+                        className={`text-[10px] font-black tracking-[0.2em] uppercase mb-1 ${isSelected ? "text-white/80" : "text-gray-400"}`}
+                      >
                         Stage {String(i + 1).padStart(2, "0")}
                       </div>
-                      <h3 className={`font-black text-xl mb-1 ${isSelected ? "text-white" : "text-gray-900"}`}>
+                      <h3
+                        className={`font-black text-xl mb-1 ${isSelected ? "text-white" : "text-gray-900"}`}
+                      >
                         {step.label}
                       </h3>
-                      <p className={`text-sm font-medium mb-2 ${isSelected ? "text-white/90" : "text-gray-500"}`}>
+                      <p
+                        className={`text-sm font-medium mb-2 ${isSelected ? "text-white/90" : "text-gray-500"}`}
+                      >
                         {step.tagline}
                       </p>
-                      <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold ${isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}>
+                      <div
+                        className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold ${isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"}`}
+                      >
                         {step.metrics}
                       </div>
                     </div>
 
-                    <ChevronRight className={`w-5 h-5 shrink-0 transition-transform ${isSelected ? "rotate-90 text-white" : "text-gray-400"}`} />
+                    <ChevronRight
+                      className={`w-5 h-5 shrink-0 transition-transform ${isSelected ? "rotate-90 text-white" : "text-gray-400"}`}
+                    />
                   </div>
 
                   {isSelected && (
@@ -244,41 +287,50 @@ const EcosystemSection = () => {
         </div>
 
         {/* Selected Stage Details (Desktop) */}
-        {selectedIndex !== null && (() => {
-          const SelectedIcon = steps[selectedIndex].icon;
-          return (
-            <div className="hidden lg:block">
-              <div className="max-w-4xl mx-auto">
-                <div className={`relative rounded-3xl p-12 bg-gradient-to-br ${steps[selectedIndex].color} border-2 border-white/20 shadow-[0_30px_80px_rgba(0,0,0,0.3)]`}>
-                  <div className={`absolute inset-0 ${steps[selectedIndex].bgGlow} blur-3xl rounded-3xl -z-10 animate-pulse`} />
-                  
-                  <div className="flex items-start gap-8">
-                    <div className="shrink-0 w-24 h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <SelectedIcon className="w-12 h-12 text-white" strokeWidth={1.5} />
-                    </div>
+        {selectedIndex !== null &&
+          (() => {
+            const SelectedIcon = steps[selectedIndex].icon;
+            return (
+              <div className="hidden lg:block">
+                <div className="max-w-4xl mx-auto">
+                  <div
+                    className={`relative rounded-3xl p-12 bg-gradient-to-br ${steps[selectedIndex].color} border-2 border-white/20 shadow-[0_30px_80px_rgba(0,0,0,0.3)]`}
+                  >
+                    <div
+                      className={`absolute inset-0 ${steps[selectedIndex].bgGlow} blur-3xl rounded-3xl -z-10 animate-pulse`}
+                    />
 
-                    <div className="flex-1">
-                      <div className="text-[11px] font-black tracking-[0.2em] uppercase text-white/80 mb-2">
-                        Stage {String(selectedIndex + 1).padStart(2, "0")} • {steps[selectedIndex].metrics}
+                    <div className="flex items-start gap-8">
+                      <div className="shrink-0 w-24 h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <SelectedIcon
+                          className="w-12 h-12 text-white"
+                          strokeWidth={1.5}
+                        />
                       </div>
-                      <h3 className="text-4xl font-black text-white mb-3">
-                        {steps[selectedIndex].label}
-                      </h3>
-                      <p className="text-lg text-white/90 font-light leading-relaxed mb-6">
-                        {steps[selectedIndex].description}
-                      </p>
-                      
-                      <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold hover:bg-white/30 transition-all cursor-pointer group">
-                        Learn More
-                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+
+                      <div className="flex-1">
+                        <div className="text-[11px] font-black tracking-[0.2em] uppercase text-white/80 mb-2">
+                          Stage {String(selectedIndex + 1).padStart(2, "0")} •{" "}
+                          {steps[selectedIndex].metrics}
+                        </div>
+                        <h3 className="text-4xl font-black text-white mb-3">
+                          {steps[selectedIndex].label}
+                        </h3>
+                        <p className="text-lg text-white/90 font-light leading-relaxed mb-6">
+                          {steps[selectedIndex].description}
+                        </p>
+
+                        <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold hover:bg-white/30 transition-all cursor-pointer group">
+                          Learn More
+                          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
       </div>
     </section>
   );

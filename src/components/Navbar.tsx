@@ -1,15 +1,29 @@
 import { useState } from "react";
 import { Menu, X, Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
 
   const links = [
-    { label: "Program", href: "#journey" },
-    { label: "Mentors", href: "#mentors" },
-    { label: "Community", href: "#community" },
-    { label: "Stories", href: "#stories" },
+    {
+      label: "Program",
+      href: isHomePage ? "#journey" : "/#journey",
+    },
+    {
+      label: "Mentors",
+      href: isHomePage ? "#mentors" : "/#mentors",
+    },
+    {
+      label: "Community",
+      href: isHomePage ? "#community" : "/#community",
+    },
+    {
+      label: "Stories",
+      href: location.pathname.startsWith("/stories") ? "/stories" : "#stories",
+    },
   ];
 
   return (

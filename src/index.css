@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    --brand-cursor: url("/cursor-plane.svg") 4 4, auto;
     --background: 0 0% 96%;
     --foreground: 0 0% 7%;
 
@@ -53,6 +54,14 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  html,
+  body,
+  body *,
+  body *::before,
+  body *::after {
+    cursor: var(--brand-cursor) !important;
   }
 
   body {
