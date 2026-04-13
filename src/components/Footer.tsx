@@ -103,7 +103,10 @@ const Footer = () => {
             <h4 className="mb-5 text-sm font-semibold text-white">Media</h4>
             <ul className="space-y-3.5 text-sm text-white/60">
               <li>
-                <Link to="/stories" className="transition-colors hover:text-white">
+                <Link
+                  to="/stories"
+                  className="transition-colors hover:text-white"
+                >
                   Success Stories
                 </Link>
               </li>
@@ -166,14 +169,104 @@ const Footer = () => {
             Copyright {new Date().getFullYear()} StartupsIndia. All rights
             reserved.
           </p>
-          <div className="flex gap-6 text-xs text-white/40">
-            <a href="#" className="transition-colors hover:text-white">
-              Privacy Policy
-            </a>
-            <a href="#" className="transition-colors hover:text-white">
-              Terms of Service
-            </a>
-          </div>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-sm mb-5 text-white">Platform</h4>
+          <ul className="space-y-3.5 text-sm text-white/60">
+            <li>
+              <a href="#journey" className="hover:text-white transition-colors">
+                Pre-Incubation
+              </a>
+            </li>
+            <li>
+              <a href="#mentors" className="hover:text-white transition-colors">
+                Mentorship
+              </a>
+            </li>
+            <li>
+              <Link to="/survey" className="hover:text-white transition-colors">
+                Readiness Survey
+              </Link>
+            </li>
+            <li>
+              <a
+                href="#community"
+                className="hover:text-white transition-colors"
+              >
+                Community
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-sm mb-5 text-white">Media</h4>
+          <ul className="space-y-3.5 text-sm text-white/60">
+            <li>
+              <a href="#stories" className="hover:text-white transition-colors">
+                Success Stories
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white transition-colors">
+                Ecosystem News
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white transition-colors">
+                Upcoming Events
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white transition-colors">
+                Press Resources
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-sm mb-5 text-white">Connect</h4>
+          <ul className="space-y-3.5 text-sm text-white/60">
+            <li>
+              <a
+                href="mailto:hello@startupsindia.in"
+                className="hover:text-white transition-colors"
+              >
+                hello@startupsindia.in
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://twitter.com"
+                className="hover:text-white transition-colors"
+              >
+                Twitter (X)
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://linkedin.com"
+                className="hover:text-white transition-colors"
+              >
+                LinkedIn
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:text-white transition-colors">
+                Partner with us
+              </a>
+            </li>
+            <li>
+              <Link
+                to="/events/founders-meet-2026/register"
+                className="hover:text-white transition-colors"
+              >
+                Register
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
     </footer>
