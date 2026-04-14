@@ -4,7 +4,7 @@ import {
   findRegistrationInSheets,
   isConfigured,
   syncRegistrationToSheets,
-} from "../lib/googleSheets";
+} from "../lib/googleSheets.js";
 
 type ApiResponse<T = Record<string, unknown>> = {
   success: boolean;
