@@ -49,9 +49,20 @@ export async function sendApprovalEmail(
 
   if (!response.ok) {
     const raw = await response.text();
+
+    // Resend sandbox allows only sending to the account owner's email
+    // until a sending domain is verified.
+    if (response.status === 403 && raw.includes("You can only send testing emails to your own email address")) {
+      return {
+        success: false,
+        message:
+          "Email skipped: Resend is in testing mode and can only send to your own email. Verify a domain to send attendee confirmations.",
+      };
+    }
+
     return {
       success: false,
-      message: `Email send failed: ${raw || response.statusText}`,
+      message: "Email could not be sent right now. Please check Resend settings and try again.",
     };
   }
 
