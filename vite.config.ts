@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import path from "path";
+import path from "node:path";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 
@@ -100,11 +100,14 @@ function vercelApiDevBridge(): Plugin {
 
           res.end(
             JSON.stringify({
-              error: "Development API bridge failed",
-              message:
-                error instanceof Error
-                  ? error.message
-                  : "Unknown development server error",
+              success: false,
+              message: "Development API bridge failed",
+              data: {
+                reason:
+                  error instanceof Error
+                    ? error.message
+                    : "Unknown development server error",
+              },
             }),
           );
         }

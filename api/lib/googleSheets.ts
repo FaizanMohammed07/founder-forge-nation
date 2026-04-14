@@ -16,6 +16,7 @@ type RegistrationRecord = {
 
 const SHEET_NAME = process.env.GOOGLE_SHEETS_SHEET_NAME || "registrations";
 const MAX_RETRIES = 3;
+const OPERATION_TIMEOUT_MS = 2500;
 let googleClientPromise: Promise<(typeof import("googleapis"))["google"]> | null =
   null;
 
@@ -43,11 +44,32 @@ function normalizePrivateKey(key: string): string {
       ? trimmed.slice(1, -1)
       : trimmed;
 
-  return unwrapped.replace(/\\n/g, "\n");
+  return unwrapped.replaceAll(String.raw`\n`, "\n");
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withTimeout<T>(
+  operation: Promise<T>,
+  timeoutMs: number,
+  context: string,
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${context} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([operation, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 }
 
 function normalizeEmail(value: string): string {
@@ -55,7 +77,7 @@ function normalizeEmail(value: string): string {
 }
 
 function normalizePhone(value: string): string {
-  return value.replace(/\D/g, "");
+  return value.replaceAll(/\D/g, "");
 }
 
 export function isConfigured(): boolean {
@@ -64,6 +86,14 @@ export function isConfigured(): boolean {
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
       process.env.GOOGLE_PRIVATE_KEY,
   );
+}
+
+function getSpreadsheetId(): string {
+  const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+  if (!spreadsheetId) {
+    throw new Error("GOOGLE_SHEETS_SPREADSHEET_ID is missing.");
+  }
+  return spreadsheetId;
 }
 
 async function getGoogleClient() {
@@ -80,9 +110,11 @@ async function getSheetsClient() {
   }
 
   const google = await getGoogleClient();
+  const privateKeyRaw = process.env.GOOGLE_PRIVATE_KEY ?? "";
+  const privateKeyWithNewlines = privateKeyRaw.replaceAll(String.raw`\n`, "\n");
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    key: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY as string),
+    key: normalizePrivateKey(privateKeyWithNewlines),
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
@@ -93,7 +125,11 @@ async function withRetry<T>(fn: () => Promise<T>, context: string): Promise<T> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
     try {
-      return await fn();
+      return await withTimeout(
+        fn(),
+        OPERATION_TIMEOUT_MS,
+        `${context} attempt ${attempt}`,
+      );
     } catch (error) {
       lastError = error;
       console.error(`[sheets] ${context} attempt ${attempt} failed`, error);
@@ -108,7 +144,7 @@ async function withRetry<T>(fn: () => Promise<T>, context: string): Promise<T> {
 
 async function ensureHeaderRow(): Promise<void> {
   const sheets = await getSheetsClient();
-  const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID as string;
+  const spreadsheetId = getSpreadsheetId();
 
   await withRetry(async () => {
     const response = await sheets.spreadsheets.values.get({
@@ -147,7 +183,7 @@ export async function findRegistrationInSheets(
   }
 
   const sheets = await getSheetsClient();
-  const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID as string;
+  const spreadsheetId = getSpreadsheetId();
   const emailNeedle = normalizeEmail(leadEmail);
   const phoneNeedle = normalizePhone(leadPhone);
 
@@ -186,7 +222,7 @@ export async function syncRegistrationToSheets(
     await ensureHeaderRow();
 
     const sheets = await getSheetsClient();
-    const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID as string;
+    const spreadsheetId = getSpreadsheetId();
 
     const row = [
       registration.id,
