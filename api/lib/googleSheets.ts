@@ -16,6 +16,7 @@ type RegistrationRecord = {
 
 const SHEET_NAME = process.env.GOOGLE_SHEETS_SHEET_NAME || "registrations";
 const MAX_RETRIES = 3;
+const OPERATION_TIMEOUT_MS = 2500;
 let googleClientPromise: Promise<(typeof import("googleapis"))["google"]> | null =
   null;
 
@@ -48,6 +49,27 @@ function normalizePrivateKey(key: string): string {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withTimeout<T>(
+  operation: Promise<T>,
+  timeoutMs: number,
+  context: string,
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${context} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([operation, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 }
 
 function normalizeEmail(value: string): string {
@@ -103,7 +125,11 @@ async function withRetry<T>(fn: () => Promise<T>, context: string): Promise<T> {
   let lastError: unknown;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
     try {
-      return await fn();
+      return await withTimeout(
+        fn(),
+        OPERATION_TIMEOUT_MS,
+        `${context} attempt ${attempt}`,
+      );
     } catch (error) {
       lastError = error;
       console.error(`[sheets] ${context} attempt ${attempt} failed`, error);
