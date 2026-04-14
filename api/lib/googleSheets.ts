@@ -7,6 +7,9 @@ type RegistrationRecord = {
   lead_college: string;
   lead_designation?: string;
   status: string;
+  payment_transaction_id?: string;
+  payment_amount?: number;
+  payment_status?: string;
   created_at: string;
   updated_at: string;
 };
@@ -25,12 +28,16 @@ const DEFAULT_HEADERS = [
   "lead_college",
   "lead_designation",
   "status",
+  "payment_transaction_id",
+  "payment_amount",
+  "payment_status",
   "created_at",
   "updated_at",
 ];
 
 function normalizePrivateKey(key: string): string {
-  const trimmed = key.trim();
+  const envValue = process.env.GOOGLE_PRIVATE_KEY || key;
+  const trimmed = envValue.trim();
   const unwrapped =
     trimmed.startsWith('"') && trimmed.endsWith('"')
       ? trimmed.slice(1, -1)
@@ -121,7 +128,7 @@ async function ensureHeaderRow(): Promise<void> {
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${SHEET_NAME}!A1:J1`,
+      range: `${SHEET_NAME}!A1:M1`,
       valueInputOption: "RAW",
       requestBody: {
         values: [DEFAULT_HEADERS],
@@ -147,7 +154,7 @@ export async function findRegistrationInSheets(
   const rows = await withRetry(async () => {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${SHEET_NAME}!A2:J`,
+      range: `${SHEET_NAME}!A2:M`,
       majorDimension: "ROWS",
     });
     return response.data.values || [];
@@ -190,6 +197,9 @@ export async function syncRegistrationToSheets(
       registration.lead_college,
       registration.lead_designation || "",
       registration.status,
+      registration.payment_transaction_id || "",
+      registration.payment_amount ? String(registration.payment_amount) : "",
+      registration.payment_status || "",
       registration.created_at,
       registration.updated_at,
       ...additionalColumns,
@@ -198,7 +208,7 @@ export async function syncRegistrationToSheets(
     await withRetry(async () => {
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: `${SHEET_NAME}!A:J`,
+        range: `${SHEET_NAME}!A:M`,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
         requestBody: {

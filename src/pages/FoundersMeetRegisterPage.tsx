@@ -19,22 +19,25 @@ type RegistrationFormData = {
   student_year: string;
   company_name: string;
   role_title: string;
+  payment_transaction_id: string;
+  payment_amount: number;
 };
 
 type RegistrationResponse = {
-  success: boolean;
   registrationId: string;
   leadName: string;
   leadEmail: string;
   leadPhone: string;
   leadCollege: string;
   designation?: string;
-  message?: string;
+  paymentTransactionId?: string;
+  paymentAmount?: number;
 };
 
-type RegistrationErrorResponse = {
-  error?: string;
+type RegistrationApiResponse = {
+  success: boolean;
   message?: string;
+  data?: RegistrationResponse;
 };
 
 const logger = {
@@ -75,11 +78,11 @@ async function submitRegistration(
   });
 
   const raw = await response.text();
-  let data: RegistrationResponse | RegistrationErrorResponse | null = null;
+  let data: RegistrationApiResponse | null = null;
 
   if (raw.trim()) {
     try {
-      data = JSON.parse(raw) as RegistrationResponse | RegistrationErrorResponse;
+      data = JSON.parse(raw) as RegistrationApiResponse;
     } catch (error) {
       logger.error("Registration API returned invalid JSON", {
         status: response.status,
@@ -104,21 +107,20 @@ async function submitRegistration(
   }
 
   if (!response.ok) {
-    const errorResponse = data as RegistrationErrorResponse | null;
     throw new Error(
-      errorResponse?.error ||
-        errorResponse?.message ||
+      data?.message ||
         `Registration failed with status ${response.status}`,
     );
   }
 
-  if (!data) {
+  if (!data?.success || !data.data) {
     throw new Error(
-      "Registration service returned an empty response. Please restart the dev server and try again.",
+      data?.message ||
+        "Registration service returned an invalid response. Please restart the dev server and try again.",
     );
   }
 
-  return data as RegistrationResponse;
+  return data.data;
 }
 
 function validateEmail(email: string): boolean {
@@ -128,6 +130,10 @@ function validateEmail(email: string): boolean {
 function validatePhone(phone: string): boolean {
   const clean = phone.replace(/[\s\-\(\)]/g, "");
   return /^[0-9]{10}$/.test(clean);
+}
+
+function validateTransactionId(transactionId: string): boolean {
+  return /^[a-zA-Z0-9\-]{8,40}$/.test(transactionId.trim());
 }
 
 function validateFormData(data: RegistrationFormData): {
@@ -183,8 +189,10 @@ const FoundersMeetRegisterPage = () => {
   const [currentRole, setCurrentRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessLoading, setIsSuccessLoading] = useState(false);
+  const [showPaymentStep, setShowPaymentStep] = useState(false);
   const [countdown, setCountdown] = useState("Loading...");
   const [formHidden, setFormHidden] = useState(false);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [successData, setSuccessData] = useState<RegistrationResponse | null>(
     null,
   );
@@ -243,12 +251,14 @@ const FoundersMeetRegisterPage = () => {
     return () => clearInterval(timer);
   }, [registrationDeadline?.date, isRegistrationOpen]);
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const paymentAmount = event.fee ?? 1000;
+  const receiverUpiId = import.meta.env.VITE_FOUNDERS_MEET_UPI_ID || "devupsociety@upi";
+  const receiverName = "DevUp Society";
+  const upiNote = `Founders Meet ${event.slug}`;
+  const upiPaymentLink = `upi://pay?pa=${encodeURIComponent(receiverUpiId)}&pn=${encodeURIComponent(receiverName)}&am=${paymentAmount}&cu=INR&tn=${encodeURIComponent(upiNote)}`;
+  const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(upiPaymentLink)}&size=320`;
 
-    const formData = new FormData(e.currentTarget);
-
+  const buildPayload = (formData: FormData): RegistrationFormData => {
     const participantName = (formData.get("lead_name") || "").toString();
     const role = (formData.get("current_role") || "").toString();
     const city = (formData.get("city") || "").toString();
@@ -257,11 +267,13 @@ const FoundersMeetRegisterPage = () => {
     const studentYear = (formData.get("student_year") || "").toString();
     const companyName = (formData.get("company_name") || "").toString();
     const roleTitle = (formData.get("role_title") || "").toString();
+    const paymentTransactionId =
+      (formData.get("payment_transaction_id") || "").toString();
 
     const leadCollege = role === "Student" ? collegeName : companyName;
     const designation = role === "Student" ? `Student - ${studentYear}` : roleTitle;
 
-    const payload: RegistrationFormData = {
+    return {
       event_slug: event.slug,
       event_name: event.title,
       lead_name: participantName,
@@ -276,7 +288,39 @@ const FoundersMeetRegisterPage = () => {
       student_year: studentYear,
       company_name: companyName,
       role_title: roleTitle,
+      payment_transaction_id: paymentTransactionId,
+      payment_amount: paymentAmount,
     };
+  };
+
+  const handleContinueToPayment = () => {
+    if (!formRef.current) {
+      return;
+    }
+
+    const formData = new FormData(formRef.current);
+    const payload = buildPayload(formData);
+    const validation = validateFormData(payload);
+
+    if (!validation.valid) {
+      alert([
+        "Please fix the following errors:",
+        "",
+        ...validation.errors.map((line) => `- ${line}`),
+      ].join("\n"));
+      return;
+    }
+
+    setShowPaymentStep(true);
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const payload = buildPayload(formData);
 
     const validation = validateFormData(payload);
     if (!validation.valid) {
@@ -289,10 +333,23 @@ const FoundersMeetRegisterPage = () => {
       return;
     }
 
+    if (!showPaymentStep) {
+      setIsSubmitting(false);
+      handleContinueToPayment();
+      return;
+    }
+
+    if (!validateTransactionId(payload.payment_transaction_id)) {
+      setIsSubmitting(false);
+      alert("Please enter a valid transaction ID.");
+      return;
+    }
+
     try {
       logger.info("Submitting registration", {
         leadName: payload.lead_name,
         leadEmail: payload.lead_email,
+        paymentTransactionId: payload.payment_transaction_id,
       });
 
       const result = await submitRegistration(payload);
@@ -304,10 +361,10 @@ const FoundersMeetRegisterPage = () => {
         pendingSuccessTimerRef.current = null;
       }, 1400);
       setSuccessMeta({
-        city,
-        role,
-        org: leadCollege,
-        linkedin,
+        city: payload.city,
+        role: payload.current_role,
+        org: payload.lead_college,
+        linkedin: payload.linkedin,
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -443,7 +500,7 @@ const FoundersMeetRegisterPage = () => {
                   REGISTRATION RECEIVED
                 </h2>
                 <p className="font-mono text-zinc-400 text-sm mb-8">
-                  Your free registration is recorded. We will send updates to{" "}
+                  Your registration and payment intent are recorded. We will send updates to{" "}
                   <span className="text-white">{successData.leadEmail}</span>. For
                   queries, reach us at{" "}
                   <a
@@ -516,7 +573,7 @@ const FoundersMeetRegisterPage = () => {
                     </div>
                   </div>
                   <div className="mt-4 text-[10px] text-zinc-500 font-mono uppercase tracking-widest text-center sm:text-left">
-                    Status: Free registration submitted
+                    Status: Payment submitted successfully
                   </div>
                 </div>
 
@@ -530,7 +587,7 @@ const FoundersMeetRegisterPage = () => {
             )}
 
             {isRegistrationOpen && !successData && !formHidden && (
-              <form onSubmit={handleSubmit} className="space-y-8">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
                 <input type="hidden" name="event_slug" value={event.slug} />
                 <input type="hidden" name="event_name" value={event.title} />
 
@@ -688,40 +745,98 @@ const FoundersMeetRegisterPage = () => {
                       </div>
                     </div>
                   )}
+
+                  {showPaymentStep && (
+                    <div className="border border-red-500/30 bg-red-500/5 rounded-lg p-4 md:p-6 space-y-4">
+                      <div className="flex items-center gap-3 border-b border-zinc-800 pb-3">
+                        <span className="w-6 h-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center font-bold text-xs">
+                          3
+                        </span>
+                        <h3 className="font-display text-xl text-white">Section 3: UPI Payment</h3>
+                      </div>
+
+                      <p className="font-mono text-xs text-zinc-300 leading-relaxed">
+                        Pay the fixed amount of <span className="text-red-300 font-bold">INR {paymentAmount}</span> using this QR or UPI link, then enter your transaction ID below.
+                      </p>
+
+                      <div className="rounded-lg bg-black/40 border border-zinc-700 p-4 flex flex-col items-center gap-3">
+                        <img
+                          src={qrCodeUrl}
+                          alt="UPI payment QR code"
+                          className="w-56 h-56 md:w-64 md:h-64 rounded-md border border-zinc-700 bg-white p-2"
+                          loading="lazy"
+                        />
+                        <a
+                          href={upiPaymentLink}
+                          className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-3 bg-red-500 text-black font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors rounded-sm"
+                        >
+                          Open UPI App
+                        </a>
+                        <p className="font-mono text-[11px] text-zinc-500 text-center break-all">
+                          Receiver UPI: {receiverUpiId}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="font-mono text-xs text-zinc-500 uppercase">
+                          Transaction ID
+                        </label>
+                        <input
+                          type="text"
+                          name="payment_transaction_id"
+                          required
+                          placeholder="Enter UPI transaction ID"
+                          className="w-full bg-black/50 border border-zinc-800 focus:border-red-400 text-white px-4 py-3 outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-4 bg-red-500 text-black font-mono font-bold uppercase tracking-widest hover:bg-red-400 transition-colors btn-glitch disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500 relative overflow-hidden rounded-sm"
-                >
-                  {!isSubmitting && <span>Submit Registration</span>}
-                  {isSubmitting && (
-                    <span className="absolute inset-0 flex items-center justify-center gap-3">
-                      <svg
-                        className="animate-spin h-5 w-5 text-black"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Processing...</span>
-                    </span>
-                  )}
-                </button>
+                {!showPaymentStep && (
+                  <button
+                    type="button"
+                    onClick={handleContinueToPayment}
+                    className="w-full py-4 bg-red-500 text-black font-mono font-bold uppercase tracking-widest hover:bg-red-400 transition-colors btn-glitch rounded-sm"
+                  >
+                    Next: Payment
+                  </button>
+                )}
+
+                {showPaymentStep && (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-red-500 text-black font-mono font-bold uppercase tracking-widest hover:bg-red-400 transition-colors btn-glitch disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500 relative overflow-hidden rounded-sm"
+                  >
+                    {!isSubmitting && <span>Submit Payment & Registration</span>}
+                    {isSubmitting && (
+                      <span className="absolute inset-0 flex items-center justify-center gap-3">
+                        <svg
+                          className="animate-spin h-5 w-5 text-black"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        <span>Processing...</span>
+                      </span>
+                    )}
+                  </button>
+                )}
               </form>
             )}
 
