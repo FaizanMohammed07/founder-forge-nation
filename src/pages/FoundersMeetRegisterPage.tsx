@@ -32,6 +32,11 @@ type RegistrationResponse = {
   message?: string;
 };
 
+type RegistrationErrorResponse = {
+  error?: string;
+  message?: string;
+};
+
 const logger = {
   info: (msg: string, data: Record<string, unknown> = {}) =>
     console.log(`[INFO] ${new Date().toISOString()} - ${msg}`, data),
@@ -69,9 +74,43 @@ async function submitRegistration(
     body: JSON.stringify(formData),
   });
 
-  const data = await response.json();
+  const raw = await response.text();
+  let data: RegistrationResponse | RegistrationErrorResponse | null = null;
+
+  if (raw.trim()) {
+    try {
+      data = JSON.parse(raw) as RegistrationResponse | RegistrationErrorResponse;
+    } catch (error) {
+      logger.error("Registration API returned invalid JSON", {
+        status: response.status,
+        statusText: response.statusText,
+        raw,
+        error,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Registration failed with status ${response.status}.`);
+      }
+
+      throw new Error(
+        "Registration service returned an invalid response. Please try again.",
+      );
+    }
+  }
+
   if (!response.ok) {
-    throw new Error(data?.error || data?.message || "Registration failed");
+    const errorResponse = data as RegistrationErrorResponse | null;
+    throw new Error(
+      errorResponse?.error ||
+        errorResponse?.message ||
+        `Registration failed with status ${response.status}`,
+    );
+  }
+
+  if (!data) {
+    throw new Error(
+      "Registration service returned an empty response. Please restart the dev server and try again.",
+    );
   }
 
   return data as RegistrationResponse;
@@ -227,10 +266,11 @@ const FoundersMeetRegisterPage = () => {
     const validation = validateFormData(payload);
     if (!validation.valid) {
       setIsSubmitting(false);
-      alert(
-        "Please fix the following errors:\n\n" +
-          validation.errors.map((line) => `• ${line}`).join("\n"),
-      );
+      alert([
+        "Please fix the following errors:",
+        "",
+        ...validation.errors.map((line) => `- ${line}`),
+      ].join("\n"));
       return;
     }
 
