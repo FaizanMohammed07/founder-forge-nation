@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   findRegistrationInSheets,
@@ -89,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const registrationId = crypto.randomUUID();
+    const registrationId = randomUUID();
 
     const registrationInsert: Record<string, unknown> = {
       id: registrationId,

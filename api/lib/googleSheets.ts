@@ -1,5 +1,3 @@
-import { google } from "googleapis";
-
 type RegistrationRecord = {
   id: string;
   event_slug: string;
@@ -15,6 +13,8 @@ type RegistrationRecord = {
 
 const SHEET_NAME = process.env.GOOGLE_SHEETS_SHEET_NAME || "registrations";
 const MAX_RETRIES = 3;
+let googleClientPromise: Promise<(typeof import("googleapis"))["google"]> | null =
+  null;
 
 const DEFAULT_HEADERS = [
   "id",
@@ -30,7 +30,13 @@ const DEFAULT_HEADERS = [
 ];
 
 function normalizePrivateKey(key: string): string {
-  return key.replace(/\\n/g, "\n");
+  const trimmed = key.trim();
+  const unwrapped =
+    trimmed.startsWith('"') && trimmed.endsWith('"')
+      ? trimmed.slice(1, -1)
+      : trimmed;
+
+  return unwrapped.replace(/\\n/g, "\n");
 }
 
 function sleep(ms: number): Promise<void> {
@@ -53,11 +59,20 @@ export function isConfigured(): boolean {
   );
 }
 
+async function getGoogleClient() {
+  if (!googleClientPromise) {
+    googleClientPromise = import("googleapis").then((module) => module.google);
+  }
+
+  return googleClientPromise;
+}
+
 async function getSheetsClient() {
   if (!isConfigured()) {
     throw new Error("Google Sheets credentials are missing.");
   }
 
+  const google = await getGoogleClient();
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     key: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY as string),

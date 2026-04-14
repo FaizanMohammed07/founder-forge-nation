@@ -89,7 +89,12 @@ async function submitRegistration(
       });
 
       if (!response.ok) {
-        throw new Error(`Registration failed with status ${response.status}.`);
+        const firstLine = raw.split("\n").find((line) => line.trim());
+        throw new Error(
+          firstLine
+            ? `Registration failed: ${firstLine}`
+            : `Registration failed with status ${response.status}.`,
+        );
       }
 
       throw new Error(
