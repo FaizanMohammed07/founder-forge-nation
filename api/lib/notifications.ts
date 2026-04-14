@@ -9,12 +9,13 @@ export async function sendApprovalEmail(
   registration: DashboardRegistration,
 ): Promise<NotificationResult> {
   const resendApiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL;
+  // Use Resend's default sender for sandbox/testing when no domain is verified.
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
-  if (!resendApiKey || !fromEmail) {
+  if (!resendApiKey) {
     return {
       success: false,
-      message: "Email not sent because RESEND_API_KEY or RESEND_FROM_EMAIL is missing.",
+      message: "Email not sent because RESEND_API_KEY is missing.",
     };
   }
 
