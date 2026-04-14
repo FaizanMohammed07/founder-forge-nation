@@ -14,6 +14,35 @@ type RegistrationRecord = {
   updated_at: string;
 };
 
+export type DashboardRegistration = {
+  id: string;
+  eventSlug: string;
+  name: string;
+  email: string;
+  phone: string;
+  organization: string;
+  designation: string;
+  status: string;
+  transactionId: string;
+  amount: number;
+  paymentStatus: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function isLikelyIsoDate(value: string): boolean {
+  if (!value) return false;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed);
+}
+
+function mapLegacyStatusToPaymentStatus(status: string): "approved" | "rejected" | "pending" {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("approved")) return "approved";
+  if (normalized.includes("rejected")) return "rejected";
+  return "pending";
+}
+
 const SHEET_NAME = process.env.GOOGLE_SHEETS_SHEET_NAME || "registrations";
 const MAX_RETRIES = 3;
 const OPERATION_TIMEOUT_MS = 2500;
@@ -78,6 +107,57 @@ function normalizeEmail(value: string): string {
 
 function normalizePhone(value: string): string {
   return value.replaceAll(/\D/g, "");
+}
+
+function toDashboardRegistration(row: string[]): DashboardRegistration {
+  const legacyRowDetected =
+    row.length >= 10 &&
+    isLikelyIsoDate(row[8] || "") &&
+    isLikelyIsoDate(row[9] || "") &&
+    !isLikelyIsoDate(row[11] || "");
+
+  if (legacyRowDetected) {
+    const legacyStatus = row[7] || "submitted";
+    return {
+      id: row[0] || "",
+      eventSlug: row[1] || "",
+      name: row[2] || "",
+      email: row[3] || "",
+      phone: row[4] || "",
+      organization: row[5] || "",
+      designation: row[6] || "",
+      status: legacyStatus,
+      transactionId: "",
+      amount: Number(process.env.FOUNDERS_MEET_PAYMENT_AMOUNT || 1000),
+      paymentStatus: mapLegacyStatusToPaymentStatus(legacyStatus),
+      createdAt: row[8] || "",
+      updatedAt: row[9] || "",
+    };
+  }
+
+  return {
+    id: row[0] || "",
+    eventSlug: row[1] || "",
+    name: row[2] || "",
+    email: row[3] || "",
+    phone: row[4] || "",
+    organization: row[5] || "",
+    designation: row[6] || "",
+    status: row[7] || "",
+    transactionId: row[8] || "",
+    amount: Number(row[9] || 0),
+    paymentStatus: (row[10] as "approved" | "rejected" | "pending") || "pending",
+    createdAt: row[11] || "",
+    updatedAt: row[12] || "",
+  };
+}
+
+function padRowToLength(row: string[], targetLength: number): string[] {
+  const cloned = [...row];
+  while (cloned.length < targetLength) {
+    cloned.push("");
+  }
+  return cloned.slice(0, targetLength);
 }
 
 export function isConfigured(): boolean {
@@ -274,4 +354,76 @@ export async function syncRegistrationToSheets(
       error: error instanceof Error ? error.message : "Unknown Sheets error",
     };
   }
+}
+
+export async function getAllRegistrationsFromSheets(): Promise<DashboardRegistration[]> {
+  if (!isConfigured()) {
+    throw new Error("Google Sheets credentials are missing.");
+  }
+
+  await ensureHeaderRow();
+
+  const sheets = await getSheetsClient();
+  const spreadsheetId = getSpreadsheetId();
+
+  const rows = await withRetry(async () => {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${SHEET_NAME}!A2:M`,
+      majorDimension: "ROWS",
+    });
+    return response.data.values || [];
+  }, "get-all-registrations");
+
+  return rows
+    .map((row) => padRowToLength(row, DEFAULT_HEADERS.length))
+    .map((row) => toDashboardRegistration(row));
+}
+
+export async function updateRegistrationStatusInSheets(
+  registrationId: string,
+  paymentStatus: "approved" | "rejected" | "pending",
+): Promise<DashboardRegistration> {
+  if (!isConfigured()) {
+    throw new Error("Google Sheets credentials are missing.");
+  }
+
+  await ensureHeaderRow();
+
+  const sheets = await getSheetsClient();
+  const spreadsheetId = getSpreadsheetId();
+
+  const rows = await withRetry(async () => {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${SHEET_NAME}!A2:M`,
+      majorDimension: "ROWS",
+    });
+    return response.data.values || [];
+  }, "update-registration-status-read");
+
+  const rowIndex = rows.findIndex((row) => (row[0] || "") === registrationId);
+  if (rowIndex === -1) {
+    throw new Error("Registration not found.");
+  }
+
+  const sheetRowNumber = rowIndex + 2;
+  const row = padRowToLength(rows[rowIndex], DEFAULT_HEADERS.length);
+  const nextStatus = paymentStatus === "approved" ? "payment_approved" : paymentStatus === "rejected" ? "payment_rejected" : "payment_submitted";
+  row[7] = nextStatus;
+  row[10] = paymentStatus;
+  row[12] = new Date().toISOString();
+
+  await withRetry(async () => {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${SHEET_NAME}!A${sheetRowNumber}:M${sheetRowNumber}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [row],
+      },
+    });
+  }, "update-registration-status-write");
+
+  return toDashboardRegistration(row);
 }

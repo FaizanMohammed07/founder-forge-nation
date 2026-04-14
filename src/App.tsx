@@ -11,6 +11,7 @@ import StoriesPage from "./pages/StoriesPage.tsx";
 import StoryDetailPage from "./pages/StoryDetailPage.tsx";
 import FoundersMeetRegisterPage from "./pages/FoundersMeetRegisterPage.tsx";
 import FoundersMeetLandingPage from "./pages/FoundersMeetLandingPage.tsx";
+import AdminPage from "./pages/AdminPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             path="/events/founders-meet-2026/register"
             element={<FoundersMeetRegisterPage />}
           />
+          <Route path="/admin" element={<AdminPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Check, Clock, ExternalLink, Timer } from "lucide-react";
+import { toast } from "sonner";
 import { foundersMeetEvent } from "@/data/foundersMeetEvents";
 import "./founders-meet-register.css";
 
@@ -303,11 +304,7 @@ const FoundersMeetRegisterPage = () => {
     const validation = validateFormData(payload);
 
     if (!validation.valid) {
-      alert([
-        "Please fix the following errors:",
-        "",
-        ...validation.errors.map((line) => `- ${line}`),
-      ].join("\n"));
+      toast.error("Please complete all required fields before proceeding.");
       return;
     }
 
@@ -325,11 +322,7 @@ const FoundersMeetRegisterPage = () => {
     const validation = validateFormData(payload);
     if (!validation.valid) {
       setIsSubmitting(false);
-      alert([
-        "Please fix the following errors:",
-        "",
-        ...validation.errors.map((line) => `- ${line}`),
-      ].join("\n"));
+      toast.error("Please fix the highlighted details and try again.");
       return;
     }
 
@@ -341,7 +334,7 @@ const FoundersMeetRegisterPage = () => {
 
     if (!validateTransactionId(payload.payment_transaction_id)) {
       setIsSubmitting(false);
-      alert("Please enter a valid transaction ID.");
+      toast.error("Please enter a valid transaction ID.");
       return;
     }
 
@@ -366,12 +359,13 @@ const FoundersMeetRegisterPage = () => {
         org: payload.lead_college,
         linkedin: payload.linkedin,
       });
+      toast.success("Registration submitted successfully.");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       logger.error("Registration failed", error);
       const message =
         error instanceof Error ? error.message : "Unknown error occurred";
-      alert(`Registration failed: ${message}\n\nCheck console (F12) for details.`);
+      toast.error(`Registration failed: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -404,7 +398,7 @@ const FoundersMeetRegisterPage = () => {
             </p>
 
             <p className="mt-3 font-mono text-xs text-zinc-500 uppercase tracking-wider">
-              Registration is free for all. Selected participants proceed to payment after interviews.
+              Complete details, then pay INR {paymentAmount} to finalize registration.
             </p>
 
             {isRegistrationOpen && registrationDeadline && (
@@ -756,10 +750,25 @@ const FoundersMeetRegisterPage = () => {
                       </div>
 
                       <p className="font-mono text-xs text-zinc-300 leading-relaxed">
-                        Pay the fixed amount of <span className="text-red-300 font-bold">INR {paymentAmount}</span> using this QR or UPI link, then enter your transaction ID below.
+                        Follow these steps:
+                        <br />1. Pay <span className="text-red-300 font-bold">INR {paymentAmount}</span> using UPI.
+                        <br />2. Copy your transaction ID from the payment app.
+                        <br />3. Paste it below and submit.
                       </p>
 
+                      <div className="border border-amber-400/40 bg-amber-500/10 text-amber-200 rounded-sm px-3 py-2 text-xs font-mono">
+                        Only INR {paymentAmount} payments will be accepted.
+                      </div>
+
                       <div className="rounded-lg bg-black/40 border border-zinc-700 p-4 flex flex-col items-center gap-3">
+                        <div className="w-full grid grid-cols-2 gap-2 text-[11px] font-mono">
+                          <div className="border border-zinc-700 rounded-sm p-2 text-zinc-300">
+                            UPI ID: <span className="text-white">{receiverUpiId}</span>
+                          </div>
+                          <div className="border border-zinc-700 rounded-sm p-2 text-zinc-300 text-right">
+                            Amount: <span className="text-white">INR {paymentAmount}</span>
+                          </div>
+                        </div>
                         <img
                           src={qrCodeUrl}
                           alt="UPI payment QR code"
@@ -770,11 +779,8 @@ const FoundersMeetRegisterPage = () => {
                           href={upiPaymentLink}
                           className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-3 bg-red-500 text-black font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors rounded-sm"
                         >
-                          Open UPI App
+                          Pay Now
                         </a>
-                        <p className="font-mono text-[11px] text-zinc-500 text-center break-all">
-                          Receiver UPI: {receiverUpiId}
-                        </p>
                       </div>
 
                       <div className="space-y-2">
