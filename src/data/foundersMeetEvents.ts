@@ -10,6 +10,36 @@ export interface FAQItem {
   answer: string;
 }
 
+export interface PartnerLogo {
+  name: string;
+  imageUrl: string;
+  domain: string;
+}
+
+export interface EcosystemCard {
+  title: string;
+  logoUrl: string;
+  description: string;
+}
+
+export interface HighlightItem {
+  title: string;
+  description: string;
+}
+
+export interface Posters {
+  mainTitle: string;
+  mainImageUrl: string;
+  timelineTitle: string;
+  timelineImageUrl: string;
+}
+
+export interface VenueMap {
+  embedUrl: string;
+  venueText: string;
+  externalUrl: string;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -26,6 +56,12 @@ export interface Event {
   seatsLeft?: number;
   timeline?: TimelineItem[];
   faqs?: FAQItem[];
+  partners?: PartnerLogo[];
+  posters?: Posters;
+  organizerCards?: EcosystemCard[];
+  associatePartners?: EcosystemCard[];
+  collaborationHighlights?: HighlightItem[];
+  venueMap?: VenueMap;
 }
 
 export const foundersMeetEvent: Event = {
@@ -43,6 +79,84 @@ export const foundersMeetEvent: Event = {
   status: "upcoming",
   fee: 1000,
   seatsLeft: 100,
+  partners: [
+    {
+      name: "Startup India",
+      imageUrl:
+        "https://res.cloudinary.com/dmrp1d1tv/image/upload/q_auto/f_auto/v1770106897/Startups_India_Logo_ba8vml.png",
+      domain: "startupsindia.in",
+    },
+    {
+      name: "DevUp",
+      imageUrl:
+        "https://res.cloudinary.com/dmrp1d1tv/image/upload/q_auto/f_auto/v1776086729/favicon_sox9m8.png",
+      domain: "devupvjit.in",
+    },
+    {
+      name: "T-Hub",
+      imageUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/4/40/T-Hub_Logo-PNG.png",
+      domain: "t-hub.co",
+    },
+  ],
+  posters: {
+    mainTitle: "Main Event Poster",
+    mainImageUrl:
+      "https://res.cloudinary.com/dmrp1d1tv/image/upload/q_auto/f_auto/v1775898652/Founders_Meet_Poster_lxwujw.png",
+    timelineTitle: "Timeline Poster",
+    timelineImageUrl:
+      "https://res.cloudinary.com/dmrp1d1tv/image/upload/q_auto/f_auto/v1775898653/Timeline_zsbyuj.png",
+  },
+  organizerCards: [
+    {
+      title: "Main Organizer",
+      logoUrl:
+        "https://res.cloudinary.com/dmrp1d1tv/image/upload/q_auto/f_auto/v1770106897/Startups_India_Logo_ba8vml.png",
+      description: "Startup India",
+    },
+    {
+      title: "Venue Ecosystem",
+      logoUrl:
+        "https://upload.wikimedia.org/wikipedia/commons/4/40/T-Hub_Logo-PNG.png",
+      description: "T-HUB",
+    },
+  ],
+  associatePartners: [
+    {
+      title: "Associate Partner",
+      logoUrl:
+        "https://res.cloudinary.com/dmrp1d1tv/image/upload/q_auto/f_auto/v1776086729/favicon_sox9m8.png",
+      description: "DevUp",
+    },
+    {
+      title: "Associate Partner",
+      logoUrl:
+        "https://res.cloudinary.com/dmrp1d1tv/image/upload/q_auto/f_auto/v1770106897/IEC-Logo_cxbv77.png",
+      description: "IEC",
+    },
+  ],
+  collaborationHighlights: [
+    {
+      title: "Startup Ecosystem Connect",
+      description:
+        "Opportunity mapping with startup community pathways.",
+    },
+    {
+      title: "T-HUB Network Access",
+      description:
+        "Founder exposure and ecosystem-level interaction opportunities.",
+    },
+    {
+      title: "Mentor & Community Connect",
+      description:
+        "Focused support with partner communities and domain mentors.",
+    },
+  ],
+  venueMap: {
+    embedUrl: "https://www.google.com/maps?q=T-Hub,+Hyderabad&output=embed",
+    venueText: "T-HUB, Hyderabad",
+    externalUrl: "https://maps.app.goo.gl/c4umsMpk6xYw3rcF8",
+  },
   registrationLink: "/events/founders-meet-2026/register",
   timeline: [
     {
@@ -89,7 +203,7 @@ export const foundersMeetEvent: Event = {
     {
       question: "What happens after registration?",
       answer:
-        "Registered participants are added to official updates and moved into interview and screening rounds.",
+        "Registered participants are added to the official WhatsApp updates channel and moved into interview and screening rounds.",
     },
     {
       question: "When is payment required?",
@@ -100,6 +214,10 @@ export const foundersMeetEvent: Event = {
       question: "How are participants selected?",
       answer:
         "Selections are made through interviews and profile screening by the event team.",
+    },
+    {
+      question: "How do I register?",
+      answer: "Use the Register button on the event page and submit your details.",
     },
     {
       question: "Who should I contact for support?",

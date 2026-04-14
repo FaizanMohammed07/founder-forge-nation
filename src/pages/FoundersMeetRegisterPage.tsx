@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Check, Clock, ExternalLink, Timer } from "lucide-react";
 import { foundersMeetEvent } from "@/data/foundersMeetEvents";
@@ -177,11 +177,13 @@ const FoundersMeetRegisterPage = () => {
 
   const [currentRole, setCurrentRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccessLoading, setIsSuccessLoading] = useState(false);
   const [countdown, setCountdown] = useState("Loading...");
   const [formHidden, setFormHidden] = useState(false);
   const [successData, setSuccessData] = useState<RegistrationResponse | null>(
     null,
   );
+  const pendingSuccessTimerRef = useRef<number | null>(null);
   const [successMeta, setSuccessMeta] = useState({
     city: "",
     role: "",
@@ -191,6 +193,14 @@ const FoundersMeetRegisterPage = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pendingSuccessTimerRef.current !== null) {
+        window.clearTimeout(pendingSuccessTimerRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -281,14 +291,19 @@ const FoundersMeetRegisterPage = () => {
       });
 
       const result = await submitRegistration(payload);
-      setSuccessData(result);
+      setFormHidden(true);
+      setIsSuccessLoading(true);
+      pendingSuccessTimerRef.current = window.setTimeout(() => {
+        setSuccessData(result);
+        setIsSuccessLoading(false);
+        pendingSuccessTimerRef.current = null;
+      }, 1400);
       setSuccessMeta({
         city,
         role,
         org: leadCollege,
         linkedin,
       });
-      setFormHidden(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       logger.error("Registration failed", error);
@@ -309,10 +324,10 @@ const FoundersMeetRegisterPage = () => {
         </div>
 
         <div className="relative z-10 w-full max-w-2xl">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8 md:mb-10">
             <Link
               to="/events/founders-meet-2026"
-              className="inline-flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-xs uppercase tracking-widest transition-colors mb-6"
+              className="inline-flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-[11px] md:text-xs uppercase tracking-widest transition-colors mb-4 md:mb-6"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Event details</span>
@@ -355,7 +370,7 @@ const FoundersMeetRegisterPage = () => {
             )}
           </div>
 
-          <div className="glass-panel p-8 md:p-12 clip-corner relative overflow-hidden">
+          <div className="glass-panel p-5 md:p-12 clip-corner relative overflow-hidden">
             {!isRegistrationOpen && (
               <div className="text-center py-16">
                 <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-yellow-500/20">
@@ -371,13 +386,51 @@ const FoundersMeetRegisterPage = () => {
                   to="/"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-widest transition-colors"
                 >
-                  Return to Events
+                  Return to HomePage
                 </Link>
               </div>
             )}
 
+            {isSuccessLoading && !successData && (
+              <div className="min-h-[520px] flex items-center justify-center text-center py-14 px-4">
+                <div className="max-w-md w-full">
+                  <div className="mx-auto mb-6 h-20 w-20 rounded-full border border-red-500/30 bg-red-500/10 flex items-center justify-center">
+                    <svg
+                      className="h-9 w-9 animate-spin text-red-300"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-20"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-100"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="font-mono text-[11px] text-red-300 uppercase tracking-[0.35em] mb-3">
+                    Loading Confirmation
+                  </p>
+                  <h2 className="font-display text-3xl md:text-4xl text-white mb-4">
+                    Registration received
+                  </h2>
+                  <p className="font-mono text-sm md:text-base text-zinc-400 leading-relaxed">
+                    We are preparing your success page and final registration details.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {successData && (
-              <div className="text-center py-10">
+              <div className="text-center py-8 md:py-10 px-1 md:px-0">
                 <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
                   <Check className="text-4xl text-red-300" />
                 </div>
@@ -397,7 +450,7 @@ const FoundersMeetRegisterPage = () => {
                   .
                 </p>
 
-                <div className="max-w-xl mx-auto mb-8 border-2 border-red-500/30 bg-red-500/10 p-5 text-left">
+                <div className="max-w-xl mx-auto mb-8 border-2 border-red-500/30 bg-red-500/10 p-5 text-left rounded-xl md:rounded-none">
                   <p className="font-mono text-[11px] text-red-300 uppercase tracking-widest mb-2">
                     Mandatory Step
                   </p>
@@ -409,64 +462,64 @@ const FoundersMeetRegisterPage = () => {
                     href="https://chat.whatsapp.com/JbT6E5ut12YDlzsOapRvNY"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-black font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors"
+                    className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-4 py-3 bg-red-500 text-black font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors rounded-sm"
                   >
                     Join WhatsApp Group
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
 
-                <div className="glass-panel p-6 clip-corner text-left max-w-xl mx-auto mb-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-zinc-400">
-                    <div>
+                <div className="glass-panel p-4 md:p-6 clip-corner text-left max-w-xl mx-auto mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-xs font-mono text-zinc-400">
+                    <div className="rounded-lg bg-black/25 border border-white/10 p-3 md:p-0 md:bg-transparent md:border-0">
                       <div className="text-zinc-500 uppercase tracking-widest">
                         Registration ID
                       </div>
-                      <div className="text-white text-sm">
+                      <div className="text-white text-sm break-all">
                         {successData.registrationId}
                       </div>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-black/25 border border-white/10 p-3 md:p-0 md:bg-transparent md:border-0">
                       <div className="text-zinc-500 uppercase tracking-widest">Name</div>
                       <div className="text-white text-sm">{successData.leadName}</div>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-black/25 border border-white/10 p-3 md:p-0 md:bg-transparent md:border-0">
                       <div className="text-zinc-500 uppercase tracking-widest">Phone</div>
                       <div className="text-white text-sm">{successData.leadPhone}</div>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-black/25 border border-white/10 p-3 md:p-0 md:bg-transparent md:border-0">
                       <div className="text-zinc-500 uppercase tracking-widest">City</div>
                       <div className="text-white text-sm">{successMeta.city}</div>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-black/25 border border-white/10 p-3 md:p-0 md:bg-transparent md:border-0">
                       <div className="text-zinc-500 uppercase tracking-widest">
                         Current Role
                       </div>
                       <div className="text-white text-sm">{successMeta.role}</div>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-black/25 border border-white/10 p-3 md:p-0 md:bg-transparent md:border-0">
                       <div className="text-zinc-500 uppercase tracking-widest">
                         Organization / College
                       </div>
                       <div className="text-white text-sm">{successMeta.org}</div>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-black/25 border border-white/10 p-3 md:p-0 md:bg-transparent md:border-0 sm:col-span-2">
                       <div className="text-zinc-500 uppercase tracking-widest">LinkedIn</div>
                       <div className="text-white text-sm break-all">
                         {successMeta.linkedin}
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 text-[10px] text-zinc-500 font-mono uppercase tracking-widest">
+                  <div className="mt-4 text-[10px] text-zinc-500 font-mono uppercase tracking-widest text-center sm:text-left">
                     Status: Free registration submitted
                   </div>
                 </div>
 
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-widest transition-colors"
+                  className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs uppercase tracking-widest transition-colors rounded-sm"
                 >
-                  Return to Events
+                  Return to HomePage
                 </Link>
               </div>
             )}
@@ -635,7 +688,7 @@ const FoundersMeetRegisterPage = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 bg-red-500 text-black font-mono font-bold uppercase tracking-widest hover:bg-red-400 transition-colors btn-glitch disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500 relative overflow-hidden"
+                  className="w-full py-4 bg-red-500 text-black font-mono font-bold uppercase tracking-widest hover:bg-red-400 transition-colors btn-glitch disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500 relative overflow-hidden rounded-sm"
                 >
                   {!isSubmitting && <span>Submit Registration</span>}
                   {isSubmitting && (
