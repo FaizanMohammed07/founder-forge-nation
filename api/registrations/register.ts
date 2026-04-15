@@ -14,6 +14,7 @@ type ApiResponse<T = Record<string, unknown>> = {
 
 type RegistrationRequestBody = {
   event_slug: string;
+  pass_type?: "normal" | "premium";
   lead_name: string;
   lead_email: string;
   lead_phone: string;
@@ -23,9 +24,18 @@ type RegistrationRequestBody = {
   payment_amount?: number;
 };
 
-const DEFAULT_FOUNDERS_MEET_PAYMENT_AMOUNT = Number(
-  process.env.FOUNDERS_MEET_PAYMENT_AMOUNT || 1000,
-);
+const FOUNDERS_MEET_PASS_AMOUNTS = {
+  normal: Number(process.env.FOUNDERS_MEET_PAYMENT_AMOUNT || 1000),
+  premium: Number(process.env.FOUNDERS_MEET_PREMIUM_PAYMENT_AMOUNT || 1299),
+} as const;
+
+function inferPassTypeFromAmount(amount: number): "normal" | "premium" {
+  if (amount === FOUNDERS_MEET_PASS_AMOUNTS.premium) {
+    return "premium";
+  }
+
+  return "normal";
+}
 
 function sendJson<T>(
   res: VercelResponse,
@@ -89,6 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const {
       event_slug,
+      pass_type,
       lead_name,
       lead_email,
       lead_phone,
@@ -145,13 +156,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    const normalizedPassType =
+      pass_type === "premium" || pass_type === "normal"
+        ? pass_type
+        : inferPassTypeFromAmount(paymentAmount);
+
     if (
       event_slug === "founders-meet-2026" &&
-      paymentAmount !== DEFAULT_FOUNDERS_MEET_PAYMENT_AMOUNT
+      paymentAmount !== FOUNDERS_MEET_PASS_AMOUNTS[normalizedPassType]
     ) {
       return sendJson(res, 400, {
         success: false,
-        message: `Payment amount mismatch. Required amount is INR ${DEFAULT_FOUNDERS_MEET_PAYMENT_AMOUNT}.`,
+        message: `Payment amount mismatch. Required amount is INR ${FOUNDERS_MEET_PASS_AMOUNTS[normalizedPassType]}.`,
       });
     }
 
@@ -162,6 +178,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       lead_phone: cleanPhone,
       lead_college: sanitizeInput(lead_college),
       designation: designation ? sanitizeInput(designation) : null,
+      pass_type: normalizedPassType,
       payment_transaction_id: sanitizeInput(String(payment_transaction_id)).trim(),
       payment_amount: paymentAmount,
     };
@@ -188,6 +205,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           leadPhone: sanitizedData.lead_phone,
           leadCollege: sanitizedData.lead_college,
           designation: sanitizedData.designation,
+          passType: sanitizedData.pass_type,
           paymentTransactionId: sanitizedData.payment_transaction_id,
           paymentAmount: sanitizedData.payment_amount,
         },
@@ -265,6 +283,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             leadPhone: sanitizedData.lead_phone,
             leadCollege: sanitizedData.lead_college,
             designation: sanitizedData.designation,
+            passType: sanitizedData.pass_type,
             paymentTransactionId: sanitizedData.payment_transaction_id,
             paymentAmount: sanitizedData.payment_amount,
           },
@@ -290,6 +309,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         leadPhone: sanitizedData.lead_phone,
         leadCollege: sanitizedData.lead_college,
         designation: sanitizedData.designation,
+        passType: sanitizedData.pass_type,
         paymentTransactionId: sanitizedData.payment_transaction_id,
         paymentAmount: sanitizedData.payment_amount,
       },

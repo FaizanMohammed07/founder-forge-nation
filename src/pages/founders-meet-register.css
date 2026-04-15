@@ -92,3 +92,92 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
+
+.founders-meet-subtle-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d4d4d8;
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.founders-pass-card {
+  position: relative;
+  text-align: left;
+  padding: 1.6rem;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    rgba(7, 7, 7, 0.94);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.founders-pass-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.founders-pass-card.is-selected {
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 24px 64px rgba(239, 68, 68, 0.16);
+}
+
+.founders-pass-card.is-premium {
+  background:
+    linear-gradient(180deg, rgba(204, 255, 0, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(7, 7, 7, 0.96);
+}
+
+.founders-pass-card.is-premium.is-selected {
+  border-color: rgba(204, 255, 0, 0.55);
+  box-shadow: 0 24px 64px rgba(204, 255, 0, 0.14);
+}
+
+.founders-pass-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(204, 255, 0, 0.14);
+  color: #eaff9d;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.founders-ticket-frame {
+  position: relative;
+  padding: 1rem;
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.2), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(204, 255, 0, 0.12), transparent 28%),
+    rgba(255, 255, 255, 0.03);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 767px) {
+  .founders-pass-card {
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+  }
+
+  .founders-ticket-frame {
+    padding: 0.75rem;
+    border-radius: 1.5rem;
+  }
+}

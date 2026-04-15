@@ -27,6 +27,16 @@ export interface HighlightItem {
   description: string;
 }
 
+export interface EventPass {
+  id: "normal" | "premium";
+  name: string;
+  price: number;
+  shortLabel: string;
+  badge?: string;
+  description: string;
+  benefits: string[];
+}
+
 export interface Posters {
   mainTitle: string;
   mainImageUrl: string;
@@ -53,7 +63,10 @@ export interface Event {
   status: "upcoming" | "past";
   registrationLink?: string;
   fee?: number;
+  registrationDeadlineAt?: string;
+  registrationNotice?: string;
   seatsLeft?: number;
+  passes?: EventPass[];
   timeline?: TimelineItem[];
   faqs?: FAQItem[];
   partners?: PartnerLogo[];
@@ -72,13 +85,42 @@ export const foundersMeetEvent: Event = {
   location: "T-HUB, Hyderabad",
   mode: "Offline",
   shortDescription:
-    "Founders Meet 2026 is a high-impact startup networking and founder showcase event at T-HUB on 18 April 2026. Registration is free, followed by interviews and screening.",
+    "Founders Meet 2026 is a high-impact startup networking and founder showcase event at T-HUB on 18 April 2026 with Normal and Premium passes for attendees and speakers.",
   fullDescription:
-    "DevUp Society presents Founders Meet 2026 at T-HUB, Hyderabad. Everyone can register for free. All registered participants are guided through WhatsApp updates and interview-based screening. Selected participants then complete payment and final confirmation before the main event on 18 April 2026, featuring founder interactions, networking, and high-visibility sessions.",
+    "DevUp Society presents Founders Meet 2026 at T-HUB, Hyderabad. Participants can register through a paid Normal or Premium pass, receive a digital ticket on confirmation, and join the official WhatsApp community for event-day updates. The main event on 18 April 2026 brings together founders, builders, and senior professionals for networking, founder interactions, and high-visibility sessions.",
   tags: ["FoundersMeet", "Startup", "Networking", "Mentorship", "Innovation"],
   status: "upcoming",
   fee: 1000,
+  registrationDeadlineAt: "2026-04-18T11:59:59+05:30",
+  registrationNotice: "Registrations open till April 18 (morning)",
   seatsLeft: 100,
+  passes: [
+    {
+      id: "normal",
+      name: "Normal Pass",
+      shortLabel: "General Access",
+      price: 1000,
+      description: "For founders, builders, and attendees joining the event experience.",
+      benefits: [
+        "Access to the full event experience",
+        "Networking with attendees and founders",
+        "General participation throughout the meet",
+      ],
+    },
+    {
+      id: "premium",
+      name: "Premium Pass",
+      shortLabel: "Stage Access",
+      badge: "Recommended",
+      price: 1299,
+      description: "Built for participants who want visibility, access, and a stronger presence in the room.",
+      benefits: [
+        "Everything included in the Normal Pass",
+        "Opportunity to speak or present on stage for 5-10 minutes",
+        "Direct exposure to founders and senior professionals",
+      ],
+    },
+  ],
   partners: [
     {
       name: "Startup India",
@@ -162,8 +204,8 @@ export const foundersMeetEvent: Event = {
     {
       id: 1,
       title: "Registration Closes",
-      date: "Apr 14",
-      description: "Final date for registration submissions.",
+      date: "Apr 18 (Morning)",
+      description: "Registration stays open until the morning of the event day.",
     },
     {
       id: 2,
@@ -197,18 +239,19 @@ export const foundersMeetEvent: Event = {
         "Founders Meet 2026 main event is on 18 April 2026 at T-HUB, Hyderabad.",
     },
     {
-      question: "Is registration free for everyone?",
-      answer: "Yes. Initial registration is free for all participants.",
+      question: "What are the available passes?",
+      answer:
+        "Normal Pass is INR 1000 for event access, networking, and general participation. Premium Pass is INR 1299 and also includes a 5-10 minute stage presentation opportunity with direct founder and senior professional exposure.",
     },
     {
       question: "What happens after registration?",
       answer:
-        "Registered participants are added to the official WhatsApp updates channel and moved into interview and screening rounds.",
+        "After successful registration and payment submission, participants receive a digital event ticket and are directed to the official WhatsApp community for updates.",
     },
     {
       question: "When is payment required?",
       answer:
-        "Only selected participants are asked to complete payment after screening.",
+        "Payment is completed during registration. Normal Pass is INR 1000 and Premium Pass is INR 1299.",
     },
     {
       question: "How are participants selected?",
