@@ -58,34 +58,47 @@ function createDevResponse(res: ServerResponse<IncomingMessage>): DevResponse {
 }
 
 function vercelApiDevBridge(): Plugin {
+  const routeToModule: Record<string, string> = {
+    "/api/registrations/register": "/api/registrations/register.ts",
+    "/api/admin/login": "/api/admin/login.ts",
+    "/api/admin/logout": "/api/admin/logout.ts",
+    "/api/admin/get-registrations": "/api/admin/get-registrations.ts",
+    "/api/admin/update-status": "/api/admin/update-status.ts",
+    "/api/tickets/get": "/api/tickets/get.ts",
+  };
+
   return {
     name: "vercel-api-dev-bridge",
     apply: "serve",
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        const pathname = (req.url || "").split("?")[0];
+        const requestUrl = req.url || "";
+        const [pathname, queryString = ""] = requestUrl.split("?");
+        const modulePath = routeToModule[pathname];
 
-        if (pathname !== "/api/registrations/register") {
+        if (!modulePath) {
           next();
           return;
         }
 
         try {
-          const registrationModule = await server.ssrLoadModule(
-            "/api/registrations/register.ts",
-          );
-          const registerHandler = registrationModule.default as (
+          const apiModule = await server.ssrLoadModule(modulePath);
+          const apiHandler = apiModule.default as (
             req: unknown,
             res: unknown,
           ) => Promise<void>;
 
-          const body = await readJsonBody(req);
           const devReq = req as DevRequest;
-          devReq.body = body;
-          devReq.query = {};
+
+          if (["POST", "PUT", "PATCH"].includes((req.method || "").toUpperCase())) {
+            devReq.body = await readJsonBody(req);
+          }
+
+          const searchParams = new URLSearchParams(queryString);
+          devReq.query = Object.fromEntries(searchParams.entries());
 
           const devRes = createDevResponse(res);
-          await registerHandler(devReq as never, devRes as never);
+          await apiHandler(devReq as never, devRes as never);
 
           if (!res.writableEnded) {
             res.end();

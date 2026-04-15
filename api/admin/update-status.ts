@@ -3,7 +3,8 @@ import { isAdminAuthenticated } from "../lib/adminAuth.js";
 import {
   updateRegistrationStatusInSheets,
 } from "../lib/googleSheets.js";
-import { sendApprovalEmail } from "../lib/notifications.js";
+import { sendApprovalEmail, sendRejectionEmail } from "../lib/notifications.js";
+import { getTicketUrl } from "../lib/tickets.js";
 
 type ApiResponse = {
   success: boolean;
@@ -13,7 +14,7 @@ type ApiResponse = {
 
 type Payload = {
   registrationId?: string;
-  paymentStatus?: "approved" | "rejected" | "pending";
+  status?: "approved" | "rejected" | "pending";
 };
 
 function sendJson(res: VercelResponse, statusCode: number, payload: ApiResponse) {
@@ -41,33 +42,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const registrationId = String(body.registrationId || "").trim();
-    const paymentStatus = body.paymentStatus;
+  const status = body.status;
 
     if (!registrationId) {
       return sendJson(res, 400, { success: false, message: "registrationId is required." });
     }
 
-    if (!paymentStatus || !["approved", "rejected", "pending"].includes(paymentStatus)) {
+    if (!status || !["approved", "rejected", "pending"].includes(status)) {
       return sendJson(res, 400, {
         success: false,
-        message: "paymentStatus must be one of approved, rejected, pending.",
+        message: "status must be one of approved, rejected, pending.",
       });
     }
 
+    const ticketUrl = status === "approved" ? getTicketUrl(registrationId) : undefined;
+
     const registration = await updateRegistrationStatusInSheets(
       registrationId,
-      paymentStatus,
+      status,
+      ticketUrl,
     );
 
     let emailResultMessage = "";
-    if (paymentStatus === "approved") {
-      const emailResult = await sendApprovalEmail(registration);
+    if (status === "approved") {
+      const emailResult = await sendApprovalEmail(registration, ticketUrl || "");
       emailResultMessage = emailResult.success ? " Email confirmation sent." : ` ${emailResult.message}`;
+    } else if (status === "rejected" && process.env.SEND_REJECTION_EMAIL === "true") {
+      const emailResult = await sendRejectionEmail(registration);
+      emailResultMessage = emailResult.success
+        ? " Rejection email sent."
+        : ` ${emailResult.message}`;
     }
 
     return sendJson(res, 200, {
       success: true,
-      message: `Status updated to ${paymentStatus}.${emailResultMessage}`,
+      message: `Status updated to ${status}.${emailResultMessage}`,
       data: {
         registration,
       },

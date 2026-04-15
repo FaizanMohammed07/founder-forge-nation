@@ -63,7 +63,7 @@ function parseRequestBody(body: unknown): RegistrationRequestBody | null {
 
 function sanitizeInput(str: string): string {
   if (typeof str !== "string") return str as unknown as string;
-  return str.trim().replace(/[<>]/g, "");
+  return str.trim().replaceAll(/[<>]/g, "");
 }
 
 function validateEmail(email: string): boolean {
@@ -71,11 +71,11 @@ function validateEmail(email: string): boolean {
 }
 
 function validatePhone(phone: string): boolean {
-  return /^[6-9]\d{9}$/.test(phone.replace(/\s/g, ""));
+  return /^[6-9]\d{9}$/.test(phone.replaceAll(/\s/g, ""));
 }
 
 function validateTransactionId(transactionId: string): boolean {
-  return /^[a-zA-Z0-9\-]{8,40}$/.test(transactionId.trim());
+  return /^[a-zA-Z0-9-]{8,40}$/.test(transactionId.trim());
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -130,7 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const cleanPhone = String(lead_phone).replace(/\s/g, "");
+  const cleanPhone = String(lead_phone).replaceAll(/\s/g, "");
     if (!validatePhone(cleanPhone)) {
       return sendJson(res, 400, {
         success: false,
@@ -197,7 +197,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       return sendJson(res, 200, {
         success: true,
-        message: "Registration already exists and is confirmed.",
+        message: "Registration Submitted Successfully. Awaiting Confirmation.",
         data: {
           registrationId: existing.id,
           leadName: sanitizedData.lead_name,
@@ -208,6 +208,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           passType: sanitizedData.pass_type,
           paymentTransactionId: sanitizedData.payment_transaction_id,
           paymentAmount: sanitizedData.payment_amount,
+          status: "pending",
         },
       });
     }
@@ -221,10 +222,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       lead_email: sanitizedData.lead_email,
       lead_phone: sanitizedData.lead_phone,
       lead_college: sanitizedData.lead_college,
-      status: "payment_submitted",
+  pass_type: sanitizedData.pass_type,
+  status: "pending",
       payment_transaction_id: sanitizedData.payment_transaction_id,
       payment_amount: sanitizedData.payment_amount,
-      payment_status: "submitted",
+  payment_status: "pending",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -250,10 +252,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         lead_phone: string;
         lead_college: string;
         lead_designation?: string;
-        status: string;
+        pass_type?: "normal" | "premium";
+        status: "pending" | "approved" | "rejected";
         payment_transaction_id?: string;
         payment_amount?: number;
-        payment_status?: string;
+        payment_status?: "pending" | "approved" | "rejected";
         created_at: string;
         updated_at: string;
       },
@@ -275,7 +278,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         return sendJson(res, 200, {
           success: true,
-          message: "Registration submitted successfully.",
+          message: "Registration Submitted Successfully. Awaiting Confirmation.",
           data: {
             registrationId: postFailureCheck.id,
             leadName: sanitizedData.lead_name,
@@ -286,6 +289,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             passType: sanitizedData.pass_type,
             paymentTransactionId: sanitizedData.payment_transaction_id,
             paymentAmount: sanitizedData.payment_amount,
+            status: "pending",
           },
         });
       }
@@ -301,7 +305,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return sendJson(res, 200, {
       success: true,
-      message: "Registration submitted successfully.",
+      message: "Registration Submitted Successfully. Awaiting Confirmation.",
       data: {
         registrationId,
         leadName: sanitizedData.lead_name,
@@ -312,6 +316,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         passType: sanitizedData.pass_type,
         paymentTransactionId: sanitizedData.payment_transaction_id,
         paymentAmount: sanitizedData.payment_amount,
+        status: "pending",
       },
     });
   } catch (error) {

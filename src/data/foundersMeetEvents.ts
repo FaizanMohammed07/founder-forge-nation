@@ -105,6 +105,7 @@ export const foundersMeetEvent: Event = {
         "Access to the full event experience",
         "Networking with attendees and founders",
         "General participation throughout the meet",
+        "Refreshments",
       ],
     },
     {
@@ -116,6 +117,9 @@ export const foundersMeetEvent: Event = {
       description: "Built for participants who want visibility, access, and a stronger presence in the room.",
       benefits: [
         "Everything included in the Normal Pass",
+        "Welcome kit",
+        "Founders Meet certification",
+        "Refreshments",
         "Opportunity to speak or present on stage for 5-10 minutes",
         "Direct exposure to founders and senior professionals",
       ],
@@ -246,7 +250,7 @@ export const foundersMeetEvent: Event = {
     {
       question: "What happens after registration?",
       answer:
-        "After successful registration and payment submission, participants receive a digital event ticket and are directed to the official WhatsApp community for updates.",
+        "After registration and payment submission, your status is marked pending for admin verification. Tickets are shared only after approval.",
     },
     {
       question: "When is payment required?",

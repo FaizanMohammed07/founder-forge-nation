@@ -5,8 +5,6 @@ import {
   Check,
   Clock,
   Crown,
-  Download,
-  ExternalLink,
   Sparkles,
   Ticket,
   Timer,
@@ -47,6 +45,7 @@ type RegistrationResponse = {
   paymentTransactionId?: string;
   paymentAmount?: number;
   passType?: PassType;
+  status?: "pending" | "approved" | "rejected";
 };
 
 type RegistrationApiResponse = {
@@ -185,11 +184,11 @@ function validateTransactionId(transactionId: string): boolean {
 
 function escapeXml(value: string): string {
   return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 function wrapSvgText(value: string, maxLength = 28): string[] {
@@ -314,16 +313,6 @@ function buildTicketMarkup({
   `.trim();
 }
 
-function downloadTicketSvg(markup: string, fileName: string) {
-  const blob = new Blob([markup], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-
 function validateFormData(data: RegistrationFormData): {
   valid: boolean;
   errors: string[];
@@ -390,8 +379,6 @@ const FoundersMeetRegisterPage = () => {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [successData, setSuccessData] = useState<RegistrationResponse | null>(null);
   const pendingSuccessTimerRef = useRef<number | null>(null);
-  const redirectTimerRef = useRef<number | null>(null);
-  const [redirectCountdown, setRedirectCountdown] = useState(8);
   const [successMeta, setSuccessMeta] = useState<SuccessMeta>({
     city: "",
     role: "",
@@ -410,9 +397,6 @@ const FoundersMeetRegisterPage = () => {
         window.clearTimeout(pendingSuccessTimerRef.current);
       }
 
-      if (redirectTimerRef.current !== null) {
-        window.clearInterval(redirectTimerRef.current);
-      }
     };
   }, []);
 
@@ -439,33 +423,6 @@ const FoundersMeetRegisterPage = () => {
     return () => window.clearInterval(timer);
   }, [isRegistrationOpen, registrationDeadline]);
 
-  useEffect(() => {
-    if (!successData) return;
-
-    setRedirectCountdown(8);
-    redirectTimerRef.current = window.setInterval(() => {
-      setRedirectCountdown((current) => {
-        if (current <= 1) {
-          if (redirectTimerRef.current !== null) {
-            window.clearInterval(redirectTimerRef.current);
-            redirectTimerRef.current = null;
-          }
-          window.location.href = WHATSAPP_COMMUNITY_URL;
-          return 0;
-        }
-
-        return current - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (redirectTimerRef.current !== null) {
-        window.clearInterval(redirectTimerRef.current);
-        redirectTimerRef.current = null;
-      }
-    };
-  }, [successData]);
-
   const paymentAmount = selectedPassDetails?.price ?? event.fee ?? 1000;
   const receiverUpiId =
     import.meta.env.VITE_FOUNDERS_MEET_UPI_ID || "devupsociety@upi";
@@ -475,7 +432,7 @@ const FoundersMeetRegisterPage = () => {
   const qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(upiPaymentLink)}&size=320`;
 
   const ticketPayload = useMemo(() => {
-    if (!successData) return null;
+    if (!successData || successData.status !== "approved") return null;
 
     const passName =
       passOptions.find((item) => item.id === successMeta.passType)?.name ??
@@ -549,14 +506,6 @@ const FoundersMeetRegisterPage = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
 
-  const handleDownloadTicket = () => {
-    if (!ticketPayload || !successData) return;
-    downloadTicketSvg(
-      ticketPayload.markup,
-      `founders-meet-ticket-${formatTicketId(successData.registrationId)}.svg`,
-    );
-  };
-
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -606,7 +555,7 @@ const FoundersMeetRegisterPage = () => {
         linkedin: payload.linkedin,
         passType: result.passType ?? payload.pass_type,
       });
-      toast.success("Registration submitted successfully.");
+  toast.success("Registration Submitted Successfully. Awaiting Confirmation.");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       logger.error("Registration failed", error);
@@ -727,99 +676,52 @@ const FoundersMeetRegisterPage = () => {
                     </svg>
                   </div>
                   <p className="font-mono text-[11px] text-red-300 uppercase tracking-[0.35em] mb-3">
-                    Preparing Ticket
+                    Submitting Registration
                   </p>
                   <h2 className="font-display text-3xl md:text-4xl text-white mb-4">
                     Registration received
                   </h2>
                   <p className="font-mono text-sm md:text-base text-zinc-400 leading-relaxed">
-                    We are preparing your confirmation screen and digital event pass.
+                    We are verifying your payment details and pass selection.
                   </p>
                 </div>
               </div>
             )}
 
-            {successData && ticketPayload && (
+            {successData && (
               <div className="py-4 md:py-6">
                 <div className="text-center mb-8">
                   <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
                     <Check className="text-4xl text-red-300" />
                   </div>
                   <h2 className="font-display text-3xl md:text-4xl text-white mb-4">
-                    Congratulations, You&apos;re Registered
+                    Registration Submitted Successfully. Awaiting Confirmation.
                   </h2>
                   <p className="font-mono text-zinc-400 text-sm max-w-2xl mx-auto">
-                    Your pass is confirmed. Download your digital ticket below, then join the
-                    WhatsApp community for important updates and coordination.
+                    Your registration is now <span className="text-amber-300">awaiting admin confirmation</span>.
+                    We will verify payment details and send your ticket only after approval.
                   </p>
+                  {ticketPayload && (
+                    <p className="font-mono text-emerald-300 text-xs mt-3">
+                      Ticket ready: {ticketPayload.ticketId}
+                    </p>
+                  )}
                 </div>
 
-                <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
-                  <div className="space-y-5">
-                    <div className="founders-ticket-frame">
-                      <img
-                        src={ticketPayload.src}
-                        alt="Founders Meet registration ticket"
-                        className="w-full h-auto rounded-[26px] border border-white/10"
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <button
-                        type="button"
-                        onClick={handleDownloadTicket}
-                        className="inline-flex justify-center items-center gap-2 px-5 py-3 bg-red-500 text-black font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors rounded-sm"
-                      >
-                        <Download className="w-4 h-4" />
-                        Download Ticket
-                      </button>
-                      <a
-                        href={WHATSAPP_COMMUNITY_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex justify-center items-center gap-2 px-5 py-3 bg-white/5 border border-white/10 text-white font-mono text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors rounded-sm"
-                      >
-                        Join WhatsApp Community
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="space-y-5">
-                    <div className="border border-red-500/30 bg-red-500/5 rounded-2xl p-5">
-                      <p className="font-mono text-[11px] text-red-300 uppercase tracking-widest mb-2">
-                        Step 2
-                      </p>
-                      <h3 className="font-display text-2xl text-white mb-3">
-                        Join the community
-                      </h3>
-                      <p className="font-mono text-sm text-zinc-300 leading-relaxed mb-4">
-                        We&apos;ll automatically redirect you in{" "}
-                        <span className="text-red-300">{redirectCountdown}s</span>. You can also
-                        join manually right now.
-                      </p>
-                      <a
-                        href={WHATSAPP_COMMUNITY_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex w-full justify-center items-center gap-2 px-4 py-3 bg-red-500 text-black font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors rounded-sm"
-                      >
-                        Join WhatsApp Community
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    </div>
-
+                <div className="grid gap-8 lg:grid-cols-2">
                     <div className="glass-panel p-5 clip-corner text-left">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono text-zinc-400">
                         <div>
-                          <div className="text-zinc-500 uppercase tracking-widest">Ticket ID</div>
+                          <div className="text-zinc-500 uppercase tracking-widest">Registration ID</div>
                           <div className="text-white text-sm break-all">
-                            {ticketPayload.ticketId}
+                            {successData.registrationId}
                           </div>
                         </div>
                         <div>
                           <div className="text-zinc-500 uppercase tracking-widest">Pass</div>
-                          <div className="text-white text-sm">{ticketPayload.passName}</div>
+                          <div className="text-white text-sm">
+                            {successData.passType === "premium" ? "Premium Pass" : "Normal Pass"}
+                          </div>
                         </div>
                         <div>
                           <div className="text-zinc-500 uppercase tracking-widest">Name</div>
@@ -866,7 +768,7 @@ const FoundersMeetRegisterPage = () => {
                         </div>
                         <div>
                           <div className="text-zinc-500 uppercase tracking-widest">Status</div>
-                          <div className="text-white text-sm">Payment submitted successfully</div>
+                          <div className="text-amber-300 text-sm">Pending admin confirmation</div>
                         </div>
                         <div className="sm:col-span-2">
                           <div className="text-zinc-500 uppercase tracking-widest">LinkedIn</div>
@@ -875,8 +777,14 @@ const FoundersMeetRegisterPage = () => {
                           </div>
                         </div>
                       </div>
+
+                      <div className="mt-5 pt-4 border-t border-white/10">
+                        <p className="font-mono text-xs text-zinc-400 leading-relaxed">
+                          Ticket generation is approval-based. Once approved, your ticket will be
+                          sent through email/WhatsApp by the admin team.
+                        </p>
+                      </div>
                     </div>
-                  </div>
                 </div>
               </div>
             )}

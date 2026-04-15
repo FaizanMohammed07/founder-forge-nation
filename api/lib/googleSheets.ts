@@ -6,13 +6,17 @@ type RegistrationRecord = {
   lead_phone: string;
   lead_college: string;
   lead_designation?: string;
-  status: string;
+  status: "pending" | "approved" | "rejected";
   payment_transaction_id?: string;
   payment_amount?: number;
-  payment_status?: string;
+  payment_status?: "pending" | "approved" | "rejected";
   created_at: string;
   updated_at: string;
+  pass_type?: "normal" | "premium";
+  ticket_url?: string;
 };
+
+type WorkflowStatus = "pending" | "approved" | "rejected";
 
 export type DashboardRegistration = {
   id: string;
@@ -22,12 +26,14 @@ export type DashboardRegistration = {
   phone: string;
   organization: string;
   designation: string;
-  status: string;
+  status: "pending" | "approved" | "rejected";
   transactionId: string;
   amount: number;
-  paymentStatus: string;
+  paymentStatus: "pending" | "approved" | "rejected";
   createdAt: string;
   updatedAt: string;
+  passType: "normal" | "premium";
+  ticketUrl: string;
 };
 
 function isLikelyIsoDate(value: string): boolean {
@@ -36,11 +42,15 @@ function isLikelyIsoDate(value: string): boolean {
   return Number.isFinite(parsed);
 }
 
-function mapLegacyStatusToPaymentStatus(status: string): "approved" | "rejected" | "pending" {
+function mapLegacyStatusToPaymentStatus(status: string): WorkflowStatus {
   const normalized = status.toLowerCase();
   if (normalized.includes("approved")) return "approved";
   if (normalized.includes("rejected")) return "rejected";
   return "pending";
+}
+
+function normalizeWorkflowStatus(status: string): WorkflowStatus {
+  return mapLegacyStatusToPaymentStatus(status || "pending");
 }
 
 const SHEET_NAME = process.env.GOOGLE_SHEETS_SHEET_NAME || "registrations";
@@ -63,6 +73,8 @@ const DEFAULT_HEADERS = [
   "payment_status",
   "created_at",
   "updated_at",
+  "pass_type",
+  "ticket_url",
 ];
 
 function normalizePrivateKey(key: string): string {
@@ -110,14 +122,11 @@ function normalizePhone(value: string): string {
 }
 
 function toDashboardRegistration(row: string[]): DashboardRegistration {
-  const legacyRowDetected =
-    row.length >= 10 &&
-    isLikelyIsoDate(row[8] || "") &&
-    isLikelyIsoDate(row[9] || "") &&
-    !isLikelyIsoDate(row[11] || "");
+  const legacyRowDetected = row.length < 14;
 
   if (legacyRowDetected) {
     const legacyStatus = row[7] || "submitted";
+    const normalizedStatus = mapLegacyStatusToPaymentStatus(legacyStatus);
     return {
       id: row[0] || "",
       eventSlug: row[1] || "",
@@ -126,14 +135,19 @@ function toDashboardRegistration(row: string[]): DashboardRegistration {
       phone: row[4] || "",
       organization: row[5] || "",
       designation: row[6] || "",
-      status: legacyStatus,
+      status: normalizedStatus,
       transactionId: "",
       amount: Number(process.env.FOUNDERS_MEET_PAYMENT_AMOUNT || 1000),
-      paymentStatus: mapLegacyStatusToPaymentStatus(legacyStatus),
+      paymentStatus: normalizedStatus,
       createdAt: row[8] || "",
       updatedAt: row[9] || "",
+      passType: "normal",
+      ticketUrl: "",
     };
   }
+
+  const status = normalizeWorkflowStatus(row[10] || row[7] || "pending");
+  const passType = (row[13] || "normal").toLowerCase() === "premium" ? "premium" : "normal";
 
   return {
     id: row[0] || "",
@@ -143,12 +157,14 @@ function toDashboardRegistration(row: string[]): DashboardRegistration {
     phone: row[4] || "",
     organization: row[5] || "",
     designation: row[6] || "",
-    status: row[7] || "",
+    status,
     transactionId: row[8] || "",
     amount: Number(row[9] || 0),
-    paymentStatus: (row[10] as "approved" | "rejected" | "pending") || "pending",
+    paymentStatus: status,
     createdAt: row[11] || "",
     updatedAt: row[12] || "",
+    passType,
+    ticketUrl: row[14] || "",
   };
 }
 
@@ -244,7 +260,7 @@ async function ensureHeaderRow(): Promise<void> {
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${SHEET_NAME}!A1:M1`,
+      range: `${SHEET_NAME}!A1:O1`,
       valueInputOption: "RAW",
       requestBody: {
         values: [DEFAULT_HEADERS],
@@ -270,7 +286,7 @@ export async function findRegistrationInSheets(
   const rows = await withRetry(async () => {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${SHEET_NAME}!A2:M`,
+      range: `${SHEET_NAME}!A2:O`,
       majorDimension: "ROWS",
     });
     return response.data.values || [];
@@ -318,13 +334,15 @@ export async function syncRegistrationToSheets(
       registration.payment_status || "",
       registration.created_at,
       registration.updated_at,
+      registration.pass_type || "normal",
+      registration.ticket_url || "",
       ...additionalColumns,
     ];
 
     await withRetry(async () => {
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: `${SHEET_NAME}!A:M`,
+        range: `${SHEET_NAME}!A:O`,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
         requestBody: {
@@ -369,7 +387,7 @@ export async function getAllRegistrationsFromSheets(): Promise<DashboardRegistra
   const rows = await withRetry(async () => {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${SHEET_NAME}!A2:M`,
+      range: `${SHEET_NAME}!A2:O`,
       majorDimension: "ROWS",
     });
     return response.data.values || [];
@@ -383,6 +401,7 @@ export async function getAllRegistrationsFromSheets(): Promise<DashboardRegistra
 export async function updateRegistrationStatusInSheets(
   registrationId: string,
   paymentStatus: "approved" | "rejected" | "pending",
+  ticketUrl?: string,
 ): Promise<DashboardRegistration> {
   if (!isConfigured()) {
     throw new Error("Google Sheets credentials are missing.");
@@ -396,7 +415,7 @@ export async function updateRegistrationStatusInSheets(
   const rows = await withRetry(async () => {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${SHEET_NAME}!A2:M`,
+      range: `${SHEET_NAME}!A2:O`,
       majorDimension: "ROWS",
     });
     return response.data.values || [];
@@ -409,15 +428,15 @@ export async function updateRegistrationStatusInSheets(
 
   const sheetRowNumber = rowIndex + 2;
   const row = padRowToLength(rows[rowIndex], DEFAULT_HEADERS.length);
-  const nextStatus = paymentStatus === "approved" ? "payment_approved" : paymentStatus === "rejected" ? "payment_rejected" : "payment_submitted";
-  row[7] = nextStatus;
+  row[7] = paymentStatus;
   row[10] = paymentStatus;
   row[12] = new Date().toISOString();
+  row[14] = paymentStatus === "approved" ? ticketUrl || row[14] || "" : "";
 
   await withRetry(async () => {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${SHEET_NAME}!A${sheetRowNumber}:M${sheetRowNumber}`,
+      range: `${SHEET_NAME}!A${sheetRowNumber}:O${sheetRowNumber}`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [row],
@@ -426,4 +445,33 @@ export async function updateRegistrationStatusInSheets(
   }, "update-registration-status-write");
 
   return toDashboardRegistration(row);
+}
+
+export async function getRegistrationByIdFromSheets(
+  registrationId: string,
+): Promise<DashboardRegistration | null> {
+  if (!isConfigured()) {
+    throw new Error("Google Sheets credentials are missing.");
+  }
+
+  await ensureHeaderRow();
+
+  const sheets = await getSheetsClient();
+  const spreadsheetId = getSpreadsheetId();
+
+  const rows = await withRetry(async () => {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${SHEET_NAME}!A2:O`,
+      majorDimension: "ROWS",
+    });
+    return response.data.values || [];
+  }, "get-registration-by-id");
+
+  const found = rows.find((row) => (row[0] || "") === registrationId);
+  if (!found) {
+    return null;
+  }
+
+  return toDashboardRegistration(padRowToLength(found, DEFAULT_HEADERS.length));
 }

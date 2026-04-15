@@ -13,10 +13,12 @@ type AdminRegistration = {
   phone: string;
   organization: string;
   designation: string;
-  status: string;
+  status: PaymentStatus;
   transactionId: string;
   amount: number;
   paymentStatus: PaymentStatus;
+  passType: "normal" | "premium";
+  ticketUrl: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -46,6 +48,8 @@ const AdminPage = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [registrations, setRegistrations] = useState<AdminRegistration[]>([]);
   const [filterStatus, setFilterStatus] = useState<"all" | PaymentStatus>("all");
+  const [dateFilter, setDateFilter] = useState<"all" | "today" | "custom">("all");
+  const [selectedDate, setSelectedDate] = useState("");
   const [search, setSearch] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
@@ -86,17 +90,34 @@ const AdminPage = () => {
   }, [fetchRegistrations]);
 
   const filteredRows = useMemo(() => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+
     return registrations.filter((item) => {
-      const statusMatch = filterStatus === "all" || item.paymentStatus === filterStatus;
+  const statusMatch = filterStatus === "all" || item.status === filterStatus;
+
+      const itemDateKey = item.createdAt ? new Date(item.createdAt).toISOString().slice(0, 10) : "";
+      const dateMatch =
+        dateFilter === "all" ||
+        (dateFilter === "today" && itemDateKey === todayKey) ||
+        (dateFilter === "custom" && selectedDate && itemDateKey === selectedDate);
+
       const query = search.trim().toLowerCase();
       const searchMatch =
         !query ||
         item.name.toLowerCase().includes(query) ||
         item.email.toLowerCase().includes(query);
 
-      return statusMatch && searchMatch;
+      return statusMatch && dateMatch && searchMatch;
     });
-  }, [registrations, filterStatus, search]);
+  }, [registrations, filterStatus, search, dateFilter, selectedDate]);
+
+  const todayCount = useMemo(() => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    return registrations.filter((item) => {
+      if (!item.createdAt) return false;
+      return new Date(item.createdAt).toISOString().slice(0, 10) === todayKey;
+    }).length;
+  }, [registrations]);
 
   const handleLogin = async () => {
     if (!password.trim()) {
@@ -144,7 +165,7 @@ const AdminPage = () => {
     toast.success("Logged out.");
   };
 
-  const updateStatus = async (registrationId: string, paymentStatus: PaymentStatus) => {
+  const updateStatus = async (registrationId: string, status: PaymentStatus) => {
     setActionLoadingId(registrationId);
 
     try {
@@ -154,7 +175,7 @@ const AdminPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ registrationId, paymentStatus }),
+        body: JSON.stringify({ registrationId, status }),
       });
 
       const raw = await response.text();
@@ -166,7 +187,7 @@ const AdminPage = () => {
 
       setRegistrations((current) =>
         current.map((item) =>
-          item.id === registrationId ? parsed.data!.registration : item,
+          item.id === registrationId ? parsed.data.registration : item,
         ),
       );
       toast.success(parsed.message);
@@ -210,7 +231,7 @@ const AdminPage = () => {
     ]);
 
     const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
+  .map((row) => row.map((cell) => `"${String(cell).split('"').join('""')}"`).join(","))
       .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -223,44 +244,12 @@ const AdminPage = () => {
   };
 
   const handleDownloadTicketPdf = (item: AdminRegistration) => {
-    const popup = window.open("", "_blank", "width=700,height=900");
-    if (!popup) {
-      toast.error("Popup blocked. Please allow popups to download ticket.");
+    if (!item.ticketUrl) {
+      toast.error("Ticket URL is not available yet.");
       return;
     }
 
-    popup.document.write(`
-      <html>
-        <head>
-          <title>Registration Ticket</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
-            .card { border: 2px solid #111; border-radius: 12px; padding: 20px; max-width: 640px; }
-            h1 { margin: 0 0 12px; font-size: 24px; }
-            p { margin: 8px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="card">
-            <h1>Registration Ticket</h1>
-            <p><strong>Registration ID:</strong> ${item.id}</p>
-            <p><strong>Name:</strong> ${item.name}</p>
-            <p><strong>Email:</strong> ${item.email}</p>
-            <p><strong>Phone:</strong> ${item.phone}</p>
-            <p><strong>Transaction ID:</strong> ${item.transactionId}</p>
-            <p><strong>Amount:</strong> INR ${item.amount}</p>
-            <p><strong>Status:</strong> ${item.paymentStatus}</p>
-            <p><strong>Created At:</strong> ${new Date(item.createdAt).toLocaleString("en-IN")}</p>
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-            };
-          </script>
-        </body>
-      </html>
-    `);
-    popup.document.close();
+    window.open(item.ticketUrl, "_blank", "noopener,noreferrer");
   };
 
   const getStatusBadgeClass = (status: PaymentStatus) => {
@@ -274,9 +263,12 @@ const AdminPage = () => {
   };
 
   const makeWhatsAppLink = (item: AdminRegistration) => {
-    const phoneDigits = item.phone.replace(/\D/g, "");
+    const phoneDigits = Array.from(item.phone)
+      .filter((char) => /\d/.test(char))
+      .join("");
+    const ticketLink = item.ticketUrl || `https://founder-forge-nation.vercel.app/api/tickets/get?id=${encodeURIComponent(item.id)}`;
     const message = encodeURIComponent(
-      `Hi ${item.name}, your registration is confirmed. Registration ID: ${item.id}`,
+      `Your registration for Founders Meet at T-Hub is confirmed. Here is your ticket: ${ticketLink}`,
     );
     return `https://wa.me/91${phoneDigits}?text=${message}`;
   };
@@ -288,6 +280,7 @@ const AdminPage = () => {
           <div>
             <h1 className="font-display text-3xl md:text-4xl">Admin Dashboard</h1>
             <p className="text-zinc-400 text-sm mt-1">Manage event registrations and payment statuses.</p>
+            <p className="text-zinc-500 text-xs mt-2">Today: {todayCount} registrations</p>
           </div>
 
           {authenticated && (
@@ -354,6 +347,36 @@ const AdminPage = () => {
               </button>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-[auto_auto_1fr] gap-3">
+              <button
+                onClick={() => {
+                  setDateFilter("today");
+                  setSelectedDate("");
+                }}
+                className={`px-4 py-2.5 rounded-sm border text-sm ${dateFilter === "today" ? "border-red-400 text-red-300" : "border-zinc-700"}`}
+              >
+                Today&apos;s registrations
+              </button>
+              <button
+                onClick={() => {
+                  setDateFilter("all");
+                  setSelectedDate("");
+                }}
+                className={`px-4 py-2.5 rounded-sm border text-sm ${dateFilter === "all" ? "border-zinc-300 text-white" : "border-zinc-700"}`}
+              >
+                All dates
+              </button>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(event) => {
+                  setSelectedDate(event.target.value);
+                  setDateFilter(event.target.value ? "custom" : "all");
+                }}
+                className="bg-black/50 border border-zinc-700 px-3 py-2.5 rounded-sm text-sm"
+              />
+            </div>
+
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setFilterStatus("all")}
@@ -372,8 +395,8 @@ const AdminPage = () => {
 
             {loading && (
               <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Skeleton key={index} className="h-20 w-full bg-zinc-800/60" />
+                {["a", "b", "c", "d", "e"].map((id) => (
+                  <Skeleton key={`admin-skeleton-${id}`} className="h-20 w-full bg-zinc-800/60" />
                 ))}
               </div>
             )}
@@ -386,6 +409,7 @@ const AdminPage = () => {
                       <th className="text-left p-3">Name</th>
                       <th className="text-left p-3">Email</th>
                       <th className="text-left p-3">Phone</th>
+                      <th className="text-left p-3">Pass Type</th>
                       <th className="text-left p-3">Transaction ID</th>
                       <th className="text-left p-3">Amount</th>
                       <th className="text-left p-3">Status</th>
@@ -402,6 +426,7 @@ const AdminPage = () => {
                         </td>
                         <td className="p-3 text-zinc-300">{item.email}</td>
                         <td className="p-3 text-zinc-300">{item.phone}</td>
+                        <td className="p-3 text-zinc-300 capitalize">{item.passType}</td>
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                             <span className="text-zinc-300">{item.transactionId || "-"}</span>
@@ -418,8 +443,8 @@ const AdminPage = () => {
                         </td>
                         <td className="p-3 text-zinc-300">INR {item.amount || 0}</td>
                         <td className="p-3">
-                          <span className={`px-2 py-1 rounded-full border text-xs ${getStatusBadgeClass(item.paymentStatus)}`}>
-                            {item.paymentStatus}
+                          <span className={`px-2 py-1 rounded-full border text-xs ${getStatusBadgeClass(item.status)}`}>
+                            {item.status}
                           </span>
                         </td>
                         <td className="p-3 text-zinc-400">{item.createdAt ? new Date(item.createdAt).toLocaleString("en-IN") : "-"}</td>
@@ -445,14 +470,16 @@ const AdminPage = () => {
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 px-2 py-1 rounded bg-green-500/20 text-green-300 hover:bg-green-500/30"
                             >
-                              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp Ticket
                             </a>
-                            <button
-                              onClick={() => handleDownloadTicketPdf(item)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-zinc-700 text-zinc-200 hover:bg-zinc-600"
-                            >
-                              <Download className="w-3.5 h-3.5" /> Ticket
-                            </button>
+                            {item.status === "approved" && (
+                              <button
+                                onClick={() => handleDownloadTicketPdf(item)}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded bg-zinc-700 text-zinc-200 hover:bg-zinc-600"
+                              >
+                                <Download className="w-3.5 h-3.5" /> Ticket
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
