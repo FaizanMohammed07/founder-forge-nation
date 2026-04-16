@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRegistrationByIdFromSheets } from "../lib/googleSheets.js";
+import { getRegistrationByIdFromSupabase } from "../lib/registrationsSupabase.js";
 import { buildTicketHtml } from "../lib/tickets.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ success: false, message: "id query is required." });
     }
 
-    const registration = await getRegistrationByIdFromSheets(registrationId);
+    const registration = await getRegistrationByIdFromSupabase(registrationId);
     if (!registration) {
       return res.status(404).json({ success: false, message: "Ticket not found." });
     }

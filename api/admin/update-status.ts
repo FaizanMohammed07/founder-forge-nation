@@ -1,8 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { isAdminAuthenticated } from "../lib/adminAuth.js";
-import {
-  updateRegistrationStatusInSheets,
-} from "../lib/googleSheets.js";
+import { updateRegistrationStatusInSupabase } from "../lib/registrationsSupabase.js";
 import { sendApprovalEmail, sendRejectionEmail } from "../lib/notifications.js";
 import { getTicketUrl } from "../lib/tickets.js";
 
@@ -57,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const ticketUrl = status === "approved" ? getTicketUrl(registrationId) : undefined;
 
-    const registration = await updateRegistrationStatusInSheets(
+    const registration = await updateRegistrationStatusInSupabase(
       registrationId,
       status,
       ticketUrl,

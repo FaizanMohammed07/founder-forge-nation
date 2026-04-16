@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Check, Copy, Download, LogOut, MessageCircle, Search, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getSupabaseClient } from "@/lib/supabase";
 
 type PaymentStatus = "approved" | "rejected" | "pending";
 
@@ -23,22 +24,42 @@ type AdminRegistration = {
   updatedAt: string;
 };
 
-type ApiResponse<T = Record<string, unknown>> = {
-  success: boolean;
-  message: string;
-  data?: T;
+type SupabaseRegistration = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  pass_type: string | null;
+  amount: number | null;
+  transaction_id: string | null;
+  status: PaymentStatus | null;
+  ticket_url: string | null;
+  created_at: string | null;
 };
 
-function safeParseApiResponse<T>(raw: string): ApiResponse<T> | null {
-  if (!raw.trim()) {
-    return null;
-  }
+function normalizeRegistrations(data: SupabaseRegistration[]): AdminRegistration[] {
+  return data.map((row) => {
+    const status = row.status || "pending";
+    const passType = row.pass_type === "premium" ? "premium" : "normal";
 
-  try {
-    return JSON.parse(raw) as ApiResponse<T>;
-  } catch {
-    return null;
-  }
+    return {
+      id: row.id,
+      eventSlug: "founders-meet-2026",
+      name: row.name || "",
+      email: row.email || "",
+      phone: row.phone || "",
+      organization: row.pass_type || "",
+      designation: row.pass_type || "",
+      status,
+      transactionId: row.transaction_id || "",
+      amount: Number(row.amount || 0),
+      paymentStatus: status,
+      passType,
+      ticketUrl: row.ticket_url || "",
+      createdAt: row.created_at || "",
+      updatedAt: row.created_at || "",
+    };
+  });
 }
 
 const AdminPage = () => {
@@ -54,35 +75,35 @@ const AdminPage = () => {
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   const fetchRegistrations = useCallback(async () => {
+    const supabase = getSupabaseClient();
     setLoading(true);
 
-    const response = await fetch("/api/admin/get-registrations", {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const { data, error } = await supabase
+      .from("registrations")
+      .select("id,name,email,phone,pass_type,amount,transaction_id,status,ticket_url,created_at")
+      .order("created_at", { ascending: false });
 
-    const raw = await response.text();
-    const parsed = safeParseApiResponse<{ registrations: AdminRegistration[] }>(raw);
+    console.log("ADMIN DATA:", data);
+    console.log("FETCH:", data);
 
-    if (response.status === 401) {
+    if (error) {
+      throw new Error(error.message || "Failed to fetch registrations.");
+    }
+
+    const normalized = normalizeRegistrations((data || []) as SupabaseRegistration[]);
+    setAuthenticated(true);
+    setRegistrations(normalized);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const isAuth = localStorage.getItem("adminAuth");
+    if (!isAuth) {
       setAuthenticated(false);
       setLoading(false);
       return;
     }
 
-    if (!response.ok || !parsed?.success) {
-      throw new Error(parsed?.message || "Failed to fetch registrations.");
-    }
-
-    setAuthenticated(true);
-    setRegistrations(parsed.data?.registrations || []);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
     fetchRegistrations().catch((error) => {
       setLoading(false);
       toast.error(error instanceof Error ? error.message : "Failed to fetch registrations.");
@@ -93,7 +114,7 @@ const AdminPage = () => {
     const todayKey = new Date().toISOString().slice(0, 10);
 
     return registrations.filter((item) => {
-  const statusMatch = filterStatus === "all" || item.status === filterStatus;
+      const statusMatch = filterStatus === "all" || item.status === filterStatus;
 
       const itemDateKey = item.createdAt ? new Date(item.createdAt).toISOString().slice(0, 10) : "";
       const dateMatch =
@@ -137,14 +158,13 @@ const AdminPage = () => {
         body: JSON.stringify({ password }),
       });
 
-      const raw = await response.text();
-      const parsed = safeParseApiResponse(raw);
-
-      if (!response.ok || !parsed?.success) {
-        throw new Error(parsed?.message || "Login failed.");
+      if (!response.ok) {
+        const raw = await response.text();
+        throw new Error(raw || "Login failed.");
       }
 
       toast.success("Admin login successful.");
+      localStorage.setItem("adminAuth", "true");
       setPassword("");
       await fetchRegistrations();
     } catch (error) {
@@ -155,11 +175,7 @@ const AdminPage = () => {
   };
 
   const handleLogout = async () => {
-    await fetch("/api/admin/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-
+    localStorage.removeItem("adminAuth");
     setAuthenticated(false);
     setRegistrations([]);
     toast.success("Logged out.");
@@ -179,7 +195,13 @@ const AdminPage = () => {
       });
 
       const raw = await response.text();
-      const parsed = safeParseApiResponse<{ registration: AdminRegistration }>(raw);
+      const parsed = raw.trim()
+        ? (JSON.parse(raw) as {
+            success: boolean;
+            message: string;
+            data?: { registration?: AdminRegistration };
+          })
+        : null;
 
       if (!response.ok || !parsed?.success || !parsed.data?.registration) {
         throw new Error(parsed?.message || "Status update failed.");
@@ -187,7 +209,7 @@ const AdminPage = () => {
 
       setRegistrations((current) =>
         current.map((item) =>
-          item.id === registrationId ? parsed.data.registration : item,
+          item.id === registrationId ? parsed.data!.registration! : item,
         ),
       );
       toast.success(parsed.message);
