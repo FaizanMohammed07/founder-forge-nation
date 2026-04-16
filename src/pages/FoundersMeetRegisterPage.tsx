@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { foundersMeetEvent } from "@/data/foundersMeetEvents";
+import { getSupabaseClient } from "@/lib/supabase";
 import "./founders-meet-register.css";
 
 type PassType = "normal" | "premium";
@@ -46,12 +47,6 @@ type RegistrationResponse = {
   paymentAmount?: number;
   passType?: PassType;
   status?: "pending" | "approved" | "rejected";
-};
-
-type RegistrationApiResponse = {
-  success: boolean;
-  message?: string;
-  data?: RegistrationResponse;
 };
 
 type SuccessMeta = {
@@ -96,77 +91,87 @@ const logger = {
     console.log(`[DEBUG] ${new Date().toISOString()} - ${msg}`, data),
 };
 
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  retries = 3,
-): Promise<Response> {
-  for (let i = 0; i < retries; i += 1) {
-    try {
-      logger.debug(`Fetch attempt ${i + 1}/${retries}`, { url });
-      return await fetch(url, options);
-    } catch (error) {
-      logger.error(`Fetch attempt ${i + 1} failed`, { url, error });
-      if (i === retries - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
-    }
-  }
+type RegistrationInsert = {
+  name: string;
+  email: string;
+  phone: string;
+  pass_type: PassType;
+  amount: number;
+  transaction_id: string;
+  status: "pending";
+  created_at: string;
+  event_slug: string;
+  event_name: string;
+  lead_college: string;
+  designation: string;
+  city: string;
+  linkedin: string;
+  current_role: string;
+  college_name: string;
+  student_year: string;
+  company_name: string;
+  role_title: string;
+};
 
-  throw new Error("Unexpected fetch failure");
-}
+type RegistrationRow = RegistrationInsert & {
+  id: string;
+};
 
 async function submitRegistration(
   formData: RegistrationFormData,
 ): Promise<RegistrationResponse> {
-  const response = await fetchWithRetry("/api/registrations/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(formData),
-  });
+  const supabase = getSupabaseClient();
 
-  const raw = await response.text();
-  let data: RegistrationApiResponse | null = null;
+  const insertPayload: RegistrationInsert = {
+    name: formData.lead_name.trim(),
+    email: formData.lead_email.trim().toLowerCase(),
+    phone: formData.lead_phone.trim(),
+    pass_type: formData.pass_type,
+    amount: formData.payment_amount,
+    transaction_id: formData.payment_transaction_id.trim(),
+    status: "pending",
+    created_at: new Date().toISOString(),
+    event_slug: formData.event_slug,
+    event_name: formData.event_name,
+    lead_college: formData.lead_college,
+    designation: formData.designation,
+    city: formData.city,
+    linkedin: formData.linkedin,
+    current_role: formData.current_role,
+    college_name: formData.college_name,
+    student_year: formData.student_year,
+    company_name: formData.company_name,
+    role_title: formData.role_title,
+  };
 
-  if (raw.trim()) {
-    try {
-      data = JSON.parse(raw) as RegistrationApiResponse;
-    } catch (error) {
-      logger.error("Registration API returned invalid JSON", {
-        status: response.status,
-        statusText: response.statusText,
-        raw,
-        error,
-      });
+  console.log("FORM:", insertPayload);
 
-      if (!response.ok) {
-        const firstLine = raw.split("\n").find((line) => line.trim());
-        throw new Error(
-          firstLine
-            ? `Registration failed: ${firstLine}`
-            : `Registration failed with status ${response.status}.`,
-        );
-      }
+  const { data, error } = await supabase
+    .from("registrations")
+    .insert([insertPayload])
+    .select(
+      "id,name,email,phone,pass_type,amount,transaction_id,status,event_slug,event_name,lead_college,designation,city,linkedin,current_role,college_name,student_year,company_name,role_title,created_at",
+    )
+    .single<RegistrationRow>();
 
-      throw new Error(
-        "Registration service returned an invalid response. Please try again.",
-      );
-    }
+  console.log("INSERT RESULT:", data, error);
+
+  if (error || !data) {
+    throw new Error(error?.message || "Registration insert failed.");
   }
 
-  if (!response.ok) {
-    throw new Error(
-      data?.message || `Registration failed with status ${response.status}`,
-    );
-  }
-
-  if (!data?.success || !data.data) {
-    throw new Error(
-      data?.message ||
-        "Registration service returned an invalid response. Please restart the dev server and try again.",
-    );
-  }
-
-  return data.data;
+  return {
+    registrationId: data.id,
+    leadName: data.name,
+    leadEmail: data.email,
+    leadPhone: data.phone,
+    leadCollege: data.lead_college,
+    designation: data.designation,
+    paymentTransactionId: data.transaction_id,
+    paymentAmount: data.amount,
+    passType: data.pass_type,
+    status: data.status,
+  };
 }
 
 function validateEmail(email: string): boolean {
