@@ -154,7 +154,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Generate registration ID
     const registrationId = crypto.randomUUID();
 
-    const registrationInsert: Record<string, any> = {
+    const registrationInsert: Record<string, unknown> = {
       id: registrationId,
       event_slug: sanitizedData.event_slug,
       lead_name: sanitizedData.lead_name,
@@ -251,7 +251,7 @@ export const POST: APIRoute = async ({ request }) => {
         },
       },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     const duration = Date.now() - startTime;
     console.error(`[register] Error after ${duration}ms:`, error);
 
@@ -272,7 +272,9 @@ export const POST: APIRoute = async ({ request }) => {
       JSON.stringify({
         error: "Registration failed",
         message:
-          error?.message ||
+          error instanceof Error
+            ? error.message
+            :
           "An error occurred. Please try again or contact support.",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } },

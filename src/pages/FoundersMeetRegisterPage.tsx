@@ -179,12 +179,12 @@ function validateEmail(email: string): boolean {
 }
 
 function validatePhone(phone: string): boolean {
-  const clean = phone.replace(/[\s\-\(\)]/g, "");
+  const clean = phone.replace(/[\s()-]/g, "");
   return /^[0-9]{10}$/.test(clean);
 }
 
 function validateTransactionId(transactionId: string): boolean {
-  return /^[a-zA-Z0-9\-]{8,40}$/.test(transactionId.trim());
+  return /^[a-zA-Z0-9-]{8,40}$/.test(transactionId.trim());
 }
 
 function escapeXml(value: string): string {

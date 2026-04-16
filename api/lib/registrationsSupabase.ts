@@ -68,6 +68,7 @@ export async function updateRegistrationStatusInSupabase(
 ): Promise<DashboardRegistration> {
   // Supabase client in server utilities is intentionally untyped here to avoid
   // table-schema generic inference issues during Vercel TS builds.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = getSupabaseAdminClient() as any;
 
   const updatePayload: { status: RegistrationStatus; ticket_url?: string } = {
