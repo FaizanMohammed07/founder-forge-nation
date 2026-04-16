@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { isAdminAuthenticated } from "../lib/adminAuth.js";
-import { getAllRegistrationsFromSheets } from "../lib/googleSheets.js";
+import { isAdminAuthenticated } from "../../server/lib/adminAuth.js";
+import { getAllRegistrationsFromSheets } from "../../server/lib/googleSheets.js";
 
 type ApiResponse = {
   success: boolean;

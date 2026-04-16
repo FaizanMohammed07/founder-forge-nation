@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getRegistrationByIdFromSupabase } from "../lib/registrationsSupabase.js";
-import { buildTicketHtml } from "../lib/tickets.js";
+import { getRegistrationByIdFromSupabase } from "../../server/lib/registrationsSupabase.js";
+import { buildTicketHtml } from "../../server/lib/tickets.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {

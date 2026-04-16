@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { isAdminAuthenticated } from "../lib/adminAuth.js";
-import { updateRegistrationStatusInSupabase } from "../lib/registrationsSupabase.js";
-import { sendApprovalEmail, sendRejectionEmail } from "../lib/notifications.js";
-import { getTicketUrl } from "../lib/tickets.js";
+import { isAdminAuthenticated } from "../../server/lib/adminAuth.js";
+import { updateRegistrationStatusInSupabase } from "../../server/lib/registrationsSupabase.js";
+import { sendApprovalEmail, sendRejectionEmail } from "../../server/lib/notifications.js";
+import { getTicketUrl } from "../../server/lib/tickets.js";
 
 type ApiResponse = {
   success: boolean;

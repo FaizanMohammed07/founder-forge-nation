@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { clearAdminSessionCookie } from "../lib/adminAuth.js";
+import { clearAdminSessionCookie } from "../../server/lib/adminAuth.js";
 
 type ApiResponse = {
   success: boolean;

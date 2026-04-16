@@ -3,7 +3,7 @@ import {
   isAdminEnvConfigured,
   setAdminSessionCookie,
   verifyAdminPassword,
-} from "../lib/adminAuth.js";
+} from "../../server/lib/adminAuth.js";
 
 type ApiResponse = {
   success: boolean;
