@@ -30,6 +30,7 @@ export async function sendApprovalEmail(
     .map((item) => `<li>${item}</li>`)
     .join("");
   const ticketAttachment = await buildTicketPdfAttachment(registration);
+  void ticketUrl;
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -42,59 +43,55 @@ export async function sendApprovalEmail(
       to: [registration.email],
       subject: "Registration Confirmed 🎉",
       html: `
-        <div style="margin:0;padding:0;background:#05060a;color:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+        <div style="margin:0;padding:0;background:#f3f4f6;color:#111827;font-family:Arial,Helvetica,sans-serif;">
           <div style="max-width:680px;margin:0 auto;padding:28px 16px;">
-            <div style="border:1px solid rgba(255,255,255,0.12);background:linear-gradient(145deg,#0d1017,#171b25);border-radius:16px;overflow:hidden;">
-              <div style="height:6px;background:linear-gradient(90deg,#ef4444,#22c55e);"></div>
-              <div style="padding:28px 24px 20px 24px;">
-                <div style="display:inline-block;padding:6px 10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);border-radius:999px;font-size:11px;letter-spacing:1.3px;font-weight:700;color:#fecaca;text-transform:uppercase;">Founders Meet - Approved</div>
-                <h1 style="margin:14px 0 8px 0;font-size:30px;line-height:1.2;color:#ffffff;">Your pass is confirmed</h1>
-                <p style="margin:0;color:#c4c8d1;font-size:15px;line-height:1.7;">Your payment has been verified by our team. Your official event ticket PDF is attached below for entry and onboarding verification.</p>
+            <div style="border:1px solid #e5e7eb;background:#ffffff;border-radius:14px;overflow:hidden;">
+              <div style="height:6px;background:#111827;"></div>
+              <div style="padding:26px 24px 22px 24px;">
+                <p style="margin:0;color:#6b7280;font-size:12px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;">Founders Meet 2026</p>
+                <h1 style="margin:10px 0 8px 0;font-size:30px;line-height:1.2;color:#111827;">Your registration is confirmed</h1>
+                <p style="margin:0;color:#374151;font-size:15px;line-height:1.7;">Your payment has been verified. Your official event ticket is attached as a PDF with QR verification.</p>
 
-                <div style="margin-top:18px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;background:rgba(255,255,255,0.03);padding:16px;">
+                <div style="margin-top:18px;border:1px solid #e5e7eb;border-radius:12px;background:#f9fafb;padding:16px;">
                   <table role="presentation" style="width:100%;border-collapse:collapse;font-size:14px;">
                     <tr>
-                      <td style="padding:6px 0;color:#8f97a7;">Attendee</td>
-                      <td style="padding:6px 0;color:#ffffff;font-weight:700;text-align:right;">${registration.name}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Attendee</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:700;text-align:right;">${registration.name}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;color:#8f97a7;">Registration ID</td>
-                      <td style="padding:6px 0;color:#ffffff;font-weight:700;text-align:right;">${registration.id}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Registration ID</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:700;text-align:right;">${registration.id}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;color:#8f97a7;">Pass Type</td>
-                      <td style="padding:6px 0;color:#ffffff;font-weight:700;text-align:right;">${passName}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Pass Type</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:700;text-align:right;">${passName}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;color:#8f97a7;">Event</td>
-                      <td style="padding:6px 0;color:#ffffff;font-weight:700;text-align:right;">${eventTitle}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Event</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:700;text-align:right;">${eventTitle}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;color:#8f97a7;">Date & Time</td>
-                      <td style="padding:6px 0;color:#ffffff;font-weight:700;text-align:right;">${eventDate}, ${eventTime}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Date & Time</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:700;text-align:right;">${eventDate}, ${eventTime}</td>
                     </tr>
                     <tr>
-                      <td style="padding:6px 0;color:#8f97a7;">Venue</td>
-                      <td style="padding:6px 0;color:#ffffff;font-weight:700;text-align:right;">${eventVenue}</td>
+                      <td style="padding:6px 0;color:#6b7280;">Venue</td>
+                      <td style="padding:6px 0;color:#111827;font-weight:700;text-align:right;">${eventVenue}</td>
                     </tr>
                   </table>
                 </div>
 
-                <div style="margin-top:16px;padding:14px 16px;border:1px solid rgba(34,197,94,0.35);background:rgba(34,197,94,0.1);border-radius:12px;color:#d9fde7;font-size:13px;line-height:1.6;">
-                  Entry flow: carry the attached ticket PDF on your phone or as a printout. QR is mandatory for onboarding check-in.
+                <div style="margin-top:16px;padding:12px 14px;border:1px solid #d1fae5;background:#ecfdf5;border-radius:12px;color:#065f46;font-size:13px;line-height:1.6;">
+                  Please carry the attached PDF ticket on your phone or as a printout. QR verification is required at check-in.
                 </div>
 
-                <div style="margin-top:18px;">
-                  <a href="${ticketUrl}" style="display:inline-block;padding:11px 18px;background:#ef4444;color:#0a0a0a;text-decoration:none;border-radius:10px;font-weight:700;font-size:13px;letter-spacing:0.3px;">View Ticket Online</a>
-                </div>
-
-                <div style="margin-top:20px;color:#c4c8d1;font-size:13px;">
-                  <p style="margin:0 0 8px 0;color:#ffffff;font-weight:700;">Pass benefits</p>
+                <div style="margin-top:20px;color:#374151;font-size:13px;">
+                  <p style="margin:0 0 8px 0;color:#111827;font-weight:700;">Pass benefits</p>
                   <ul style="margin:0;padding-left:18px;line-height:1.8;">${passBenefits}</ul>
                 </div>
 
-                <div style="margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);color:#8f97a7;font-size:12px;line-height:1.6;">
-                  Need help? Reply to this email or contact the organizers.
+                <div style="margin-top:22px;padding-top:14px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:12px;line-height:1.6;">
+                  Need help? Reply to this email and our team will assist you.
                 </div>
               </div>
             </div>

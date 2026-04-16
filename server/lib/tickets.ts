@@ -10,6 +10,11 @@ const DEVUP_LOGO_URL =
 const THUB_LOGO_URL =
   "https://upload.wikimedia.org/wikipedia/commons/4/40/T-Hub_Logo-PNG.png";
 
+type RemoteImageData = {
+  bytes: Uint8Array;
+  contentType: string;
+};
+
 function escapeXml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -59,8 +64,7 @@ export function buildTicketSvg(registration: DashboardRegistration): string {
   const qrPayload = encodeURIComponent(
     `FOUNDERS-MEET|${ticketId}|${registration.name}|${registration.passType}`,
   );
-  const largeQrCodeUrl = `https://quickchart.io/qr?text=${qrPayload}&size=360`;
-  const smallQrCodeUrl = `https://quickchart.io/qr?text=${qrPayload}&size=140`;
+  const largeQrCodeUrl = `https://quickchart.io/qr?text=${qrPayload}&size=340`;
 
   const eventName = process.env.EVENT_TITLE || "Founders Meet";
   const eventDate = process.env.EVENT_DATE || "18 April 2026";
@@ -68,77 +72,52 @@ export function buildTicketSvg(registration: DashboardRegistration): string {
   const eventVenue = process.env.EVENT_VENUE || "T-HUB, Hyderabad";
 
   return `
-<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1050" viewBox="0 0 1500 1050" role="img" aria-label="Founders Meet Ticket">
-  <defs>
-    <linearGradient id="ticketBg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#05060a" />
-      <stop offset="100%" stop-color="#121621" />
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#ef4444" />
-      <stop offset="100%" stop-color="#22c55e" />
-    </linearGradient>
-  </defs>
-  <rect x="0" y="0" width="1500" height="1050" rx="44" fill="url(#ticketBg)" />
-  <rect x="30" y="30" width="1440" height="990" rx="34" fill="none" stroke="rgba(255,255,255,0.12)" />
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="930" viewBox="0 0 1500 930" role="img" aria-label="Founders Meet Ticket">
+  <rect x="0" y="0" width="1500" height="930" fill="#f3f4f6" />
+  <rect x="68" y="52" width="1364" height="826" rx="26" fill="#ffffff" stroke="#e5e7eb" stroke-width="2" />
+  <rect x="68" y="52" width="1364" height="16" rx="8" fill="#111827" />
 
-  <rect x="70" y="70" width="1050" height="910" rx="30" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" />
-  <rect x="1120" y="70" width="310" height="910" rx="30" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" />
-  <line x1="1120" y1="90" x2="1120" y2="960" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-dasharray="7 10" />
+  <text x="118" y="120" fill="#6b7280" font-size="18" font-family="Arial, Helvetica, sans-serif" letter-spacing="2">STARTUPS INDIA PRESENTS</text>
+  <text x="118" y="170" fill="#111827" font-size="54" font-weight="700" font-family="Arial, Helvetica, sans-serif">Founders Meet</text>
 
-  <rect x="70" y="70" width="1050" height="10" rx="5" fill="url(#accent)" />
+  <rect x="118" y="196" width="920" height="132" rx="14" fill="#f9fafb" stroke="#e5e7eb" />
+  <text x="146" y="234" fill="#6b7280" font-size="14" font-family="Arial, Helvetica, sans-serif">VENUE</text>
+  <text x="146" y="264" fill="#111827" font-size="30" font-family="Arial, Helvetica, sans-serif">${escapeXml(eventVenue)}</text>
+  <text x="554" y="234" fill="#6b7280" font-size="14" font-family="Arial, Helvetica, sans-serif">DATE</text>
+  <text x="554" y="264" fill="#111827" font-size="30" font-family="Arial, Helvetica, sans-serif">${escapeXml(eventDate)}</text>
+  <text x="800" y="234" fill="#6b7280" font-size="14" font-family="Arial, Helvetica, sans-serif">TIME</text>
+  <text x="800" y="264" fill="#111827" font-size="30" font-family="Arial, Helvetica, sans-serif">${escapeXml(eventTime)}</text>
 
-  <text x="120" y="132" fill="#fca5a5" font-size="24" font-family="Arial, Helvetica, sans-serif" letter-spacing="4">STARTUPS INDIA PRESENTS</text>
-  <text x="120" y="194" fill="#ffffff" font-size="70" font-weight="700" font-family="Arial, Helvetica, sans-serif">Founders Meet</text>
+  <text x="118" y="382" fill="#6b7280" font-size="14" font-family="Arial, Helvetica, sans-serif" letter-spacing="1.2">ATTENDEE</text>
+  <text x="118" y="422" fill="#111827" font-size="42" font-weight="700" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.name)}</text>
+  <text x="118" y="458" fill="#374151" font-size="24" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.email)}</text>
+  <text x="118" y="494" fill="#374151" font-size="24" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.phone)}</text>
 
-  <text x="120" y="250" fill="#9ca3af" font-size="18" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">VENUE</text>
-  <text x="120" y="286" fill="#ffffff" font-size="36" font-family="Arial, Helvetica, sans-serif">${escapeXml(eventVenue)}</text>
+  <rect x="118" y="536" width="360" height="86" rx="12" fill="#111827" />
+  <text x="146" y="568" fill="#d1d5db" font-size="13" font-family="Arial, Helvetica, sans-serif" letter-spacing="1.1">PASS TYPE</text>
+  <text x="146" y="602" fill="#ffffff" font-size="34" font-weight="700" font-family="Arial, Helvetica, sans-serif">${escapeXml(passName)}</text>
 
-  <text x="470" y="250" fill="#9ca3af" font-size="18" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">DATE</text>
-  <text x="470" y="286" fill="#ffffff" font-size="36" font-family="Arial, Helvetica, sans-serif">${escapeXml(eventDate)}</text>
+  <text x="118" y="684" fill="#6b7280" font-size="14" font-family="Arial, Helvetica, sans-serif">TRANSACTION ID</text>
+  <text x="118" y="716" fill="#111827" font-size="28" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.transactionId || "N/A")}</text>
 
-  <text x="760" y="250" fill="#9ca3af" font-size="18" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">TIME</text>
-  <text x="760" y="286" fill="#ffffff" font-size="36" font-family="Arial, Helvetica, sans-serif">${escapeXml(eventTime)}</text>
+  <text x="118" y="774" fill="#6b7280" font-size="14" font-family="Arial, Helvetica, sans-serif">TICKET ID</text>
+  <text x="118" y="810" fill="#111827" font-size="34" font-weight="700" font-family="Arial, Helvetica, sans-serif">${escapeXml(ticketId)}</text>
 
-  <text x="120" y="358" fill="#9ca3af" font-size="16" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">ATTENDEE NAME</text>
-  <text x="120" y="404" fill="#ffffff" font-size="48" font-weight="700" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.name)}</text>
-  <text x="120" y="446" fill="#d4d4d8" font-size="24" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.email)}</text>
-  <text x="120" y="482" fill="#d4d4d8" font-size="24" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.phone)}</text>
+  <rect x="1078" y="196" width="286" height="346" rx="14" fill="#f9fafb" stroke="#e5e7eb" />
+  <image href="${largeQrCodeUrl}" x="1121" y="230" width="200" height="200" preserveAspectRatio="xMidYMid meet" />
+  <text x="1221" y="462" fill="#374151" font-size="16" text-anchor="middle" font-family="Arial, Helvetica, sans-serif">Scan for entry verification</text>
 
-  <rect x="120" y="528" width="350" height="96" rx="18" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.35)" />
-  <text x="148" y="564" fill="#fecaca" font-size="15" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">PASS TYPE</text>
-  <text x="148" y="603" fill="#ffffff" font-size="38" font-weight="700" font-family="Arial, Helvetica, sans-serif">${escapeXml(passName)}</text>
+  <text x="118" y="858" fill="#6b7280" font-size="13" font-family="Arial, Helvetica, sans-serif">Official partners</text>
+  <rect x="118" y="868" width="284" height="64" rx="10" fill="#ffffff" stroke="#d1d5db" />
+  <image href="${STARTUP_INDIA_LOGO_URL}" x="136" y="882" width="248" height="38" preserveAspectRatio="xMidYMid meet" />
 
-  <text x="120" y="684" fill="#9ca3af" font-size="16" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">TRANSACTION ID</text>
-  <text x="120" y="724" fill="#ffffff" font-size="30" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.transactionId || "N/A")}</text>
+  <rect x="420" y="868" width="186" height="64" rx="10" fill="#ffffff" stroke="#d1d5db" />
+  <image href="${THUB_LOGO_URL}" x="450" y="884" width="126" height="34" preserveAspectRatio="xMidYMid meet" />
 
-  <text x="120" y="792" fill="#9ca3af" font-size="16" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">TICKET ID</text>
-  <text x="120" y="832" fill="#ffffff" font-size="34" font-weight="700" font-family="Arial, Helvetica, sans-serif">${escapeXml(ticketId)}</text>
+  <rect x="624" y="868" width="132" height="64" rx="10" fill="#ffffff" stroke="#d1d5db" />
+  <image href="${DEVUP_LOGO_URL}" x="660" y="882" width="60" height="36" preserveAspectRatio="xMidYMid meet" />
 
-  <image href="${largeQrCodeUrl}" x="760" y="500" width="300" height="300" preserveAspectRatio="xMidYMid meet" />
-  <text x="910" y="838" fill="#d4d4d8" font-size="18" text-anchor="middle" font-family="Arial, Helvetica, sans-serif">Scan for onboarding and entry verification</text>
-
-  <text x="120" y="906" fill="#9ca3af" font-size="15" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">PARTNERS</text>
-  <rect x="120" y="918" width="210" height="48" rx="10" fill="rgba(255,255,255,0.95)" />
-  <image href="${STARTUP_INDIA_LOGO_URL}" x="132" y="926" width="186" height="32" preserveAspectRatio="xMidYMid meet" />
-  <rect x="346" y="918" width="140" height="48" rx="10" fill="rgba(255,255,255,0.95)" />
-  <image href="${THUB_LOGO_URL}" x="368" y="928" width="96" height="28" preserveAspectRatio="xMidYMid meet" />
-  <rect x="500" y="918" width="150" height="48" rx="10" fill="rgba(255,255,255,0.95)" />
-  <image href="${DEVUP_LOGO_URL}" x="548" y="927" width="54" height="30" preserveAspectRatio="xMidYMid meet" />
-  <text x="670" y="949" fill="#ffffff" font-size="21" font-weight="700" font-family="Arial, Helvetica, sans-serif">I&amp;E   ·   ISI</text>
-
-  <text x="1160" y="132" fill="#fca5a5" font-size="18" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">TEAR-OFF STUB</text>
-  <text x="1160" y="188" fill="#ffffff" font-size="36" font-weight="700" font-family="Arial, Helvetica, sans-serif">Founders Meet</text>
-  <text x="1160" y="230" fill="#d4d4d8" font-size="24" font-family="Arial, Helvetica, sans-serif">18 April</text>
-  <text x="1160" y="278" fill="#9ca3af" font-size="15" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">TICKET ID</text>
-  <text x="1160" y="316" fill="#ffffff" font-size="30" font-weight="700" font-family="Arial, Helvetica, sans-serif">${escapeXml(ticketId)}</text>
-  <image href="${smallQrCodeUrl}" x="1172" y="364" width="210" height="210" preserveAspectRatio="xMidYMid meet" />
-  <text x="1276" y="606" fill="#d4d4d8" font-size="16" text-anchor="middle" font-family="Arial, Helvetica, sans-serif">Quick verify scan</text>
-  <text x="1160" y="708" fill="#9ca3af" font-size="15" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">PASS</text>
-  <text x="1160" y="744" fill="#ffffff" font-size="28" font-family="Arial, Helvetica, sans-serif">${escapeXml(passName)}</text>
-  <text x="1160" y="804" fill="#9ca3af" font-size="15" font-family="Arial, Helvetica, sans-serif" letter-spacing="3">TXN ID</text>
-  <text x="1160" y="842" fill="#ffffff" font-size="22" font-family="Arial, Helvetica, sans-serif">${escapeXml(registration.transactionId || "N/A")}</text>
-  <text x="1160" y="918" fill="#9ca3af" font-size="14" font-family="Arial, Helvetica, sans-serif">Keep this stub until entry validation.</text>
+  <text x="780" y="906" fill="#111827" font-size="23" font-weight="700" font-family="Arial, Helvetica, sans-serif">I&amp;E · ISI</text>
 </svg>
 `.trim();
 }
@@ -156,14 +135,39 @@ function scaleToFit(
   };
 }
 
-async function fetchImageBytes(url: string): Promise<Uint8Array> {
+async function fetchImageData(url: string): Promise<RemoteImageData> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch image: ${url}`);
   }
 
   const buffer = await response.arrayBuffer();
-  return new Uint8Array(buffer);
+  return {
+    bytes: new Uint8Array(buffer),
+    contentType: response.headers.get("content-type") || "",
+  };
+}
+
+async function embedRemoteImage(
+  pdf: PDFDocument,
+  image: RemoteImageData,
+): Promise<Awaited<ReturnType<PDFDocument["embedPng"]>> | null> {
+  try {
+    if (image.contentType.includes("jpeg") || image.contentType.includes("jpg")) {
+      return await pdf.embedJpg(image.bytes);
+    }
+    return await pdf.embedPng(image.bytes);
+  } catch {
+    try {
+      return await pdf.embedPng(image.bytes);
+    } catch {
+      try {
+        return await pdf.embedJpg(image.bytes);
+      } catch {
+        return null;
+      }
+    }
+  }
 }
 
 export async function buildTicketPdfAttachment(registration: DashboardRegistration): Promise<{
@@ -178,174 +182,156 @@ export async function buildTicketPdfAttachment(registration: DashboardRegistrati
   const qrPayload = encodeURIComponent(
     `FOUNDERS-MEET|${ticketId}|${registration.name}|${registration.passType}`,
   );
-  const qrUrl = `https://quickchart.io/qr?text=${qrPayload}&size=480`;
-  const stubQrUrl = `https://quickchart.io/qr?text=${qrPayload}&size=220`;
+  const qrUrl = `https://quickchart.io/qr?text=${qrPayload}&size=420`;
 
-  const [startupIndiaLogoBytes, thubLogoBytes, devupLogoBytes, qrBytes, stubQrBytes] =
-    await Promise.all([
-      fetchImageBytes(STARTUP_INDIA_LOGO_URL),
-      fetchImageBytes(THUB_LOGO_URL),
-      fetchImageBytes(DEVUP_LOGO_URL),
-      fetchImageBytes(qrUrl),
-      fetchImageBytes(stubQrUrl),
-    ]);
+  const [startupIndiaLogoData, thubLogoData, devupLogoData, qrData] = await Promise.all([
+    fetchImageData(STARTUP_INDIA_LOGO_URL),
+    fetchImageData(THUB_LOGO_URL),
+    fetchImageData(DEVUP_LOGO_URL),
+    fetchImageData(qrUrl),
+  ]);
 
   const pdf = await PDFDocument.create();
-  const page = pdf.addPage([360, 252]); // 5in x 3.5in at 72pt/in
+  const page = pdf.addPage([640, 390]);
   const fontRegular = await pdf.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const startupIndiaLogo = await pdf.embedPng(startupIndiaLogoBytes);
-  const thubLogo = await pdf.embedPng(thubLogoBytes);
-  const devupLogo = await pdf.embedPng(devupLogoBytes);
-  const qrImage = await pdf.embedPng(qrBytes);
-  const stubQrImage = await pdf.embedPng(stubQrBytes);
+  const startupIndiaLogo = await embedRemoteImage(pdf, startupIndiaLogoData);
+  const thubLogo = await embedRemoteImage(pdf, thubLogoData);
+  const devupLogo = await embedRemoteImage(pdf, devupLogoData);
+  const qrImage = await embedRemoteImage(pdf, qrData);
 
-  const leftWidth = 270;
-  const rightX = leftWidth;
-
-  page.drawRectangle({ x: 0, y: 0, width: 360, height: 252, color: rgb(0.03, 0.04, 0.07) });
+  page.drawRectangle({ x: 0, y: 0, width: 640, height: 390, color: rgb(0.95, 0.96, 0.97) });
   page.drawRectangle({
-    x: 6,
-    y: 6,
-    width: 348,
-    height: 240,
-    borderColor: rgb(0.35, 0.38, 0.45),
-    borderWidth: 0.8,
-    color: rgb(0.04, 0.05, 0.09),
+    x: 24,
+    y: 24,
+    width: 592,
+    height: 342,
+    color: rgb(1, 1, 1),
+    borderColor: rgb(0.87, 0.89, 0.92),
+    borderWidth: 1,
   });
-
-  page.drawRectangle({
-    x: 8,
-    y: 8,
-    width: leftWidth - 10,
-    height: 236,
-    borderColor: rgb(0.26, 0.3, 0.38),
-    borderWidth: 0.7,
-    color: rgb(0.05, 0.06, 0.11),
-  });
-  page.drawRectangle({
-    x: rightX,
-    y: 8,
-    width: 82,
-    height: 236,
-    borderColor: rgb(0.26, 0.3, 0.38),
-    borderWidth: 0.7,
-    color: rgb(0.07, 0.08, 0.13),
-  });
-
-  for (let y = 14; y < 236; y += 7) {
-    page.drawLine({
-      start: { x: rightX, y },
-      end: { x: rightX, y: y + 3 },
-      color: rgb(0.8, 0.82, 0.86),
-      thickness: 0.9,
-    });
-  }
-
-  page.drawRectangle({ x: 8, y: 238, width: leftWidth - 10, height: 3, color: rgb(0.91, 0.27, 0.29) });
+  page.drawRectangle({ x: 24, y: 354, width: 592, height: 12, color: rgb(0.07, 0.09, 0.13) });
 
   page.drawText("STARTUPS INDIA PRESENTS", {
-    x: 14,
-    y: 225,
-    size: 7.5,
+    x: 44,
+    y: 334,
+    size: 10,
     font: fontBold,
-    color: rgb(0.97, 0.68, 0.7),
+    color: rgb(0.43, 0.48, 0.55),
   });
   page.drawText("Founders Meet", {
-    x: 14,
-    y: 208,
-    size: 18,
+    x: 44,
+    y: 305,
+    size: 30,
     font: fontBold,
-    color: rgb(1, 1, 1),
+    color: rgb(0.07, 0.09, 0.13),
   });
-
-  page.drawText("Venue", { x: 14, y: 191, size: 7, font: fontRegular, color: rgb(0.62, 0.66, 0.73) });
-  page.drawText(eventVenue, { x: 14, y: 182, size: 9, font: fontBold, color: rgb(1, 1, 1) });
-  page.drawText("Date", { x: 122, y: 191, size: 7, font: fontRegular, color: rgb(0.62, 0.66, 0.73) });
-  page.drawText(eventDate, { x: 122, y: 182, size: 9, font: fontBold, color: rgb(1, 1, 1) });
-  page.drawText("Time", { x: 198, y: 191, size: 7, font: fontRegular, color: rgb(0.62, 0.66, 0.73) });
-  page.drawText(eventTime, { x: 198, y: 182, size: 9, font: fontBold, color: rgb(1, 1, 1) });
-
-  page.drawText("ATTENDEE", { x: 14, y: 166, size: 6.5, font: fontRegular, color: rgb(0.62, 0.66, 0.73) });
-  page.drawText(registration.name.slice(0, 28), { x: 14, y: 154, size: 12, font: fontBold, color: rgb(1, 1, 1) });
 
   page.drawRectangle({
-    x: 14,
-    y: 132,
-    width: 88,
-    height: 18,
-    color: rgb(0.26, 0.1, 0.13),
-    borderColor: rgb(0.8, 0.28, 0.34),
-    borderWidth: 0.6,
+    x: 44,
+    y: 242,
+    width: 358,
+    height: 56,
+    color: rgb(0.98, 0.98, 0.99),
+    borderColor: rgb(0.9, 0.92, 0.95),
+    borderWidth: 1,
   });
-  page.drawText("PASS", { x: 18, y: 142, size: 6, font: fontRegular, color: rgb(0.98, 0.78, 0.8) });
-  page.drawText(passName, { x: 18, y: 135, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+  page.drawText("Venue", { x: 58, y: 279, size: 9, font: fontRegular, color: rgb(0.43, 0.48, 0.55) });
+  page.drawText(eventVenue.slice(0, 36), { x: 58, y: 262, size: 13, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
+  page.drawText("Date", { x: 240, y: 279, size: 9, font: fontRegular, color: rgb(0.43, 0.48, 0.55) });
+  page.drawText(eventDate, { x: 240, y: 262, size: 13, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
+  page.drawText("Time", { x: 334, y: 279, size: 9, font: fontRegular, color: rgb(0.43, 0.48, 0.55) });
+  page.drawText(eventTime.slice(0, 20), { x: 334, y: 262, size: 13, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
 
-  page.drawText("TRANSACTION ID", { x: 14, y: 121, size: 6.5, font: fontRegular, color: rgb(0.62, 0.66, 0.73) });
-  page.drawText((registration.transactionId || "N/A").slice(0, 26), { x: 14, y: 111, size: 8.5, font: fontBold, color: rgb(1, 1, 1) });
+  page.drawText("Attendee", { x: 44, y: 223, size: 9, font: fontRegular, color: rgb(0.43, 0.48, 0.55) });
+  page.drawText(registration.name.slice(0, 32), { x: 44, y: 204, size: 18, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
+  page.drawText(registration.email.slice(0, 40), { x: 44, y: 188, size: 10.5, font: fontRegular, color: rgb(0.2, 0.24, 0.3) });
 
-  page.drawText("TICKET ID", { x: 14, y: 100, size: 6.5, font: fontRegular, color: rgb(0.62, 0.66, 0.73) });
-  page.drawText(ticketId, { x: 14, y: 88, size: 11, font: fontBold, color: rgb(1, 1, 1) });
+  page.drawRectangle({ x: 44, y: 150, width: 168, height: 28, color: rgb(0.07, 0.09, 0.13) });
+  page.drawText(passName.toUpperCase(), { x: 54, y: 160, size: 11, font: fontBold, color: rgb(1, 1, 1) });
 
-  const qrLargeSize = 78;
-  page.drawImage(qrImage, { x: 175, y: 86, width: qrLargeSize, height: qrLargeSize });
-  page.drawText("Scan for onboarding", {
-    x: 170,
-    y: 77,
-    size: 6.5,
-    font: fontRegular,
-    color: rgb(0.83, 0.85, 0.9),
-  });
-
-  const startupIndiaLogoScaled = scaleToFit(
-    startupIndiaLogo.width,
-    startupIndiaLogo.height,
-    58,
-    12,
-  );
-  const thubLogoScaled = scaleToFit(thubLogo.width, thubLogo.height, 34, 11);
-  const devupLogoScaled = scaleToFit(devupLogo.width, devupLogo.height, 20, 11);
-
-  page.drawRectangle({ x: 14, y: 16, width: 72, height: 16, color: rgb(0.95, 0.95, 0.95) });
-  page.drawImage(startupIndiaLogo, {
-    x: 14 + (72 - startupIndiaLogoScaled.width) / 2,
-    y: 16 + (16 - startupIndiaLogoScaled.height) / 2,
-    width: startupIndiaLogoScaled.width,
-    height: startupIndiaLogoScaled.height,
-  });
-
-  page.drawRectangle({ x: 90, y: 16, width: 46, height: 16, color: rgb(0.95, 0.95, 0.95) });
-  page.drawImage(thubLogo, {
-    x: 90 + (46 - thubLogoScaled.width) / 2,
-    y: 16 + (16 - thubLogoScaled.height) / 2,
-    width: thubLogoScaled.width,
-    height: thubLogoScaled.height,
-  });
-
-  page.drawRectangle({ x: 140, y: 16, width: 28, height: 16, color: rgb(0.95, 0.95, 0.95) });
-  page.drawImage(devupLogo, {
-    x: 140 + (28 - devupLogoScaled.width) / 2,
-    y: 16 + (16 - devupLogoScaled.height) / 2,
-    width: devupLogoScaled.width,
-    height: devupLogoScaled.height,
-  });
-  page.drawText("I&E · ISI", {
-    x: 174,
-    y: 21,
-    size: 8,
+  page.drawText("Transaction ID", { x: 44, y: 132, size: 9, font: fontRegular, color: rgb(0.43, 0.48, 0.55) });
+  page.drawText((registration.transactionId || "N/A").slice(0, 32), {
+    x: 44,
+    y: 116,
+    size: 11,
     font: fontBold,
-    color: rgb(0.95, 0.95, 0.95),
+    color: rgb(0.07, 0.09, 0.13),
   });
 
-  page.drawText("FOUNDERS MEET", { x: 278, y: 226, size: 6.5, font: fontBold, color: rgb(0.97, 0.68, 0.7) });
-  page.drawText("18 APR", { x: 278, y: 214, size: 10, font: fontBold, color: rgb(1, 1, 1) });
-  page.drawText("TICKET", { x: 278, y: 202, size: 6.5, font: fontRegular, color: rgb(0.62, 0.66, 0.73) });
-  page.drawText(ticketId, { x: 278, y: 192, size: 9, font: fontBold, color: rgb(1, 1, 1) });
+  page.drawText("Ticket ID", { x: 44, y: 96, size: 9, font: fontRegular, color: rgb(0.43, 0.48, 0.55) });
+  page.drawText(ticketId, { x: 44, y: 78, size: 15, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
 
-  page.drawImage(stubQrImage, { x: 277, y: 132, width: 56, height: 56 });
-  page.drawText("VERIFY", { x: 289, y: 124, size: 6.5, font: fontRegular, color: rgb(0.83, 0.85, 0.9) });
-  page.drawText(passName.toUpperCase(), { x: 278, y: 107, size: 8, font: fontBold, color: rgb(1, 1, 1) });
+  page.drawRectangle({
+    x: 426,
+    y: 126,
+    width: 160,
+    height: 172,
+    color: rgb(0.98, 0.98, 0.99),
+    borderColor: rgb(0.9, 0.92, 0.95),
+    borderWidth: 1,
+  });
+  if (qrImage) {
+    page.drawImage(qrImage, { x: 445, y: 149, width: 122, height: 122 });
+  }
+  page.drawText("Scan for entry verification", {
+    x: 441,
+    y: 135,
+    size: 9,
+    font: fontRegular,
+    color: rgb(0.2, 0.24, 0.3),
+  });
+
+  page.drawText("Official partners", { x: 44, y: 58, size: 9, font: fontRegular, color: rgb(0.43, 0.48, 0.55) });
+
+  page.drawRectangle({ x: 44, y: 34, width: 170, height: 20, color: rgb(1, 1, 1), borderColor: rgb(0.83, 0.86, 0.9), borderWidth: 1 });
+  page.drawRectangle({ x: 220, y: 34, width: 116, height: 20, color: rgb(1, 1, 1), borderColor: rgb(0.83, 0.86, 0.9), borderWidth: 1 });
+  page.drawRectangle({ x: 342, y: 34, width: 92, height: 20, color: rgb(1, 1, 1), borderColor: rgb(0.83, 0.86, 0.9), borderWidth: 1 });
+
+  if (startupIndiaLogo) {
+    const startupIndiaLogoScaled = scaleToFit(startupIndiaLogo.width, startupIndiaLogo.height, 156, 14);
+    page.drawImage(startupIndiaLogo, {
+      x: 44 + (170 - startupIndiaLogoScaled.width) / 2,
+      y: 34 + (20 - startupIndiaLogoScaled.height) / 2,
+      width: startupIndiaLogoScaled.width,
+      height: startupIndiaLogoScaled.height,
+    });
+  } else {
+    page.drawText("Startups India", { x: 88, y: 40, size: 8.5, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
+  }
+
+  if (thubLogo) {
+    const thubLogoScaled = scaleToFit(thubLogo.width, thubLogo.height, 102, 14);
+    page.drawImage(thubLogo, {
+      x: 220 + (116 - thubLogoScaled.width) / 2,
+      y: 34 + (20 - thubLogoScaled.height) / 2,
+      width: thubLogoScaled.width,
+      height: thubLogoScaled.height,
+    });
+  } else {
+    page.drawText("T-Hub", { x: 262, y: 40, size: 8.5, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
+  }
+
+  if (devupLogo) {
+    const devupLogoScaled = scaleToFit(devupLogo.width, devupLogo.height, 78, 14);
+    page.drawImage(devupLogo, {
+      x: 342 + (92 - devupLogoScaled.width) / 2,
+      y: 34 + (20 - devupLogoScaled.height) / 2,
+      width: devupLogoScaled.width,
+      height: devupLogoScaled.height,
+    });
+  } else {
+    page.drawText("DevUp", { x: 373, y: 40, size: 8.5, font: fontBold, color: rgb(0.07, 0.09, 0.13) });
+  }
+
+  page.drawText("I&E · ISI", {
+    x: 448,
+    y: 40,
+    size: 10,
+    font: fontBold,
+    color: rgb(0.07, 0.09, 0.13),
+  });
 
   const pdfBytes = await pdf.save();
   const base64Content = Buffer.from(pdfBytes).toString("base64");

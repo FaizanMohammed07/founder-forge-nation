@@ -182,6 +182,15 @@ const AdminPage = () => {
   };
 
   const updateStatus = async (registrationId: string, status: PaymentStatus) => {
+    if (status === "approved") {
+      const shouldApprove = window.confirm(
+        "Are you sure you want to approve this registration? This will generate and email the ticket.",
+      );
+      if (!shouldApprove) {
+        return;
+      }
+    }
+
     setActionLoadingId(registrationId);
 
     try {
