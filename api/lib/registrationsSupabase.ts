@@ -48,7 +48,7 @@ export async function getRegistrationByIdFromSupabase(
     .from("registrations")
     .select("id,name,email,phone,pass_type,amount,transaction_id,status,ticket_url,created_at")
     .eq("id", registrationId)
-    .single<RegistrationRow>();
+    .single();
 
   if (error) {
     if (error.code === "PGRST116") {
@@ -58,7 +58,7 @@ export async function getRegistrationByIdFromSupabase(
     throw new Error(error.message || "Failed to fetch registration.");
   }
 
-  return mapRow(data);
+  return mapRow(data as RegistrationRow);
 }
 
 export async function updateRegistrationStatusInSupabase(
@@ -87,11 +87,11 @@ export async function updateRegistrationStatusInSupabase(
     .update(updatePayload)
     .eq("id", registrationId)
     .select("id,name,email,phone,pass_type,amount,transaction_id,status,ticket_url,created_at")
-    .single<RegistrationRow>();
+    .single();
 
   if (error || !data) {
     throw new Error(error?.message || "Failed to update registration status.");
   }
 
-  return mapRow(data);
+  return mapRow(data as RegistrationRow);
 }
