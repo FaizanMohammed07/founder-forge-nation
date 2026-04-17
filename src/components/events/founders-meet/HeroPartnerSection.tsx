@@ -12,6 +12,12 @@ const HeroPartnerSection = ({ event }: Props) => {
     month: "long",
     year: "numeric",
   });
+  const registrationDeadline = event.registrationDeadlineAt
+    ? new Date(event.registrationDeadlineAt)
+    : null;
+  const isRegistrationOpen =
+    event.status === "upcoming" &&
+    (!registrationDeadline || Date.now() < registrationDeadline.getTime());
 
   return (
     <section className="glass-panel clip-corner p-6 md:p-10">
@@ -81,24 +87,35 @@ const HeroPartnerSection = ({ event }: Props) => {
               <div className="flex items-center gap-2 text-zinc-400 text-xs font-mono uppercase mb-1">
                 <Layers className="w-4 h-4 text-red-300" /> Format
               </div>
-              <p className="text-white font-semibold">Free Registration + Interview Selection</p>
+              <p className="text-white font-semibold">Paid Passes + Admin Approval</p>
             </div>
           </div>
 
           <div className="border border-red-400/30 bg-red-500/10 rounded-lg p-5 md:p-6">
             <p className="text-[11px] font-mono uppercase tracking-wider text-red-200 mb-2">
-              Limited Founder Slots
+              Event Update
             </p>
             <h2 className="font-display text-2xl md:text-3xl text-white mb-4">
-              Ready To Enter The Room?
+              {isRegistrationOpen ? "Ready To Enter The Room?" : "Registrations Closed"}
             </h2>
-            <Link
-              to="/events/founders-meet-2026/register"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-red-500 text-black font-semibold rounded-sm hover:bg-red-400 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Register Now
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <p className="text-sm text-zinc-200 mb-4 max-w-2xl">
+              {isRegistrationOpen
+                ? "Choose your pass and complete registration to confirm your place."
+                : "New registrations have been stopped. You can still review the event details and venue information here."}
+            </p>
+            {isRegistrationOpen ? (
+              <Link
+                to="/events/founders-meet-2026/register"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-red-500 text-black font-semibold rounded-sm hover:bg-red-400 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Register Now
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-800 text-white font-semibold rounded-sm border border-white/10">
+                Registration Closed
+              </span>
+            )}
           </div>
         </div>
       </div>

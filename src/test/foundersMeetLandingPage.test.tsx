@@ -24,7 +24,7 @@ describe("FoundersMeetLandingPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "FAQ" })).toBeInTheDocument();
 
-    const cta = screen.getByRole("link", { name: /register now/i });
-    expect(cta).toHaveAttribute("href", "/events/founders-meet-2026/register");
+    expect(screen.getByText("Registrations Closed")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /register now/i })).not.toBeInTheDocument();
   });
 });

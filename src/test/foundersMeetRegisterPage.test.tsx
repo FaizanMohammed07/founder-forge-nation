@@ -11,7 +11,7 @@ Object.defineProperty(window, "scrollTo", {
 vi.stubGlobal("fetch", vi.fn());
 
 describe("FoundersMeetRegisterPage", () => {
-  it("renders the updated passes and registration notice", () => {
+  it("renders the closed state when registrations are stopped", () => {
     render(
       <MemoryRouter>
         <FoundersMeetRegisterPage />
@@ -19,18 +19,10 @@ describe("FoundersMeetRegisterPage", () => {
     );
 
     expect(
-      screen.getByText("Registrations open till April 18 (morning)"),
+      screen.getByText("REGISTRATIONS PAUSED"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Choose Your Pass" }),
+      screen.getByText("Registrations are currently unavailable. Please try again shortly."),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Normal Pass" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Premium Pass" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Recommended")).toBeInTheDocument();
-    expect(screen.getByText("Rs. 1299")).toBeInTheDocument();
   });
 });

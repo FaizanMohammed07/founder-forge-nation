@@ -91,8 +91,8 @@ export const foundersMeetEvent: Event = {
   tags: ["FoundersMeet", "Startup", "Networking", "Mentorship", "Innovation"],
   status: "upcoming",
   fee: 1000,
-  registrationDeadlineAt: "2026-04-18T11:59:59+05:30",
-  registrationNotice: "Registrations open till April 18 (morning)",
+  registrationDeadlineAt: "2026-04-17T00:00:00+05:30",
+  registrationNotice: "Registrations are now closed",
   seatsLeft: 100,
   passes: [
     {
@@ -208,8 +208,8 @@ export const foundersMeetEvent: Event = {
     {
       id: 1,
       title: "Registration Closes",
-      date: "Apr 18 (Morning)",
-      description: "Registration stays open until the morning of the event day.",
+      date: "Closed",
+      description: "Registrations have been closed for this event.",
     },
     {
       id: 2,
@@ -264,7 +264,7 @@ export const foundersMeetEvent: Event = {
     },
     {
       question: "How do I register?",
-      answer: "Use the Register button on the event page and submit your details.",
+      answer: "Registrations are currently closed for this event.",
     },
     {
       question: "Who should I contact for support?",

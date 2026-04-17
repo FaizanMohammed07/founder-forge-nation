@@ -50,12 +50,12 @@ const Index = () => {
               Upcoming Event Alert
             </p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-[#111111] tracking-tight mb-3">
-              Founders Meet 2026 Is Live
+              Founders Meet 2026
             </h2>
             <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6">
-              Registrations are now open for Founders Meet 2026 at T-HUB,
-              Hyderabad. Explore complete details, timeline, and reserve your
-              spot.
+              Registrations are now closed for Founders Meet 2026 at T-HUB,
+              Hyderabad. You can still view the event details, venue, and
+              schedule.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">

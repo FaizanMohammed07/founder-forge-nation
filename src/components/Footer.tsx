@@ -260,10 +260,10 @@ const Footer = () => {
             </li>
             <li>
               <Link
-                to="/events/founders-meet-2026/register"
+                to="/events/founders-meet-2026"
                 className="hover:text-white transition-colors"
               >
-                Register
+                Founders Meet
               </Link>
             </li>
           </ul>
